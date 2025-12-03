@@ -103,4 +103,17 @@ class AuthService {
       rethrow;
     }
   }
+
+  // Získat všechny uživatele (pro admina)
+  Future<List<Map<String, dynamic>>> getAllUsers() async {
+    try {
+      final response = await _supabase
+          .from('Uzivatel')
+          .select()
+          .order('mail');
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
