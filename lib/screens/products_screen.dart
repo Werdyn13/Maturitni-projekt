@@ -1,0 +1,99 @@
+import 'package:flutter/material.dart';
+import '../widgets/app_bar_widget.dart';
+
+class ProductsScreen extends StatelessWidget {
+  final String category;
+  final IconData icon;
+
+  const ProductsScreen({
+    super.key,
+    required this.category,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: const AppBarWidget(),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 800),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        category,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.brown[800],
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+                      // Empty state
+                      Card(
+                        elevation: 2,
+                        child: Padding(
+                          padding: const EdgeInsets.all(40.0),
+                          child: Column(
+                            children: [
+                              Icon(
+                                icon,
+                                size: 80,
+                                color: Colors.brown[300],
+                              ),
+                              const SizedBox(height: 24),
+                              Text(
+                                'Zatím nejsou k dispozici žádné produkty',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.brown[800],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'Brzy přibudou nové produkty',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.brown[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            color: Colors.brown[700],
+            child: Column(
+              children: [
+                Text(
+                  '© 2025 Bánovská pekárna',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                ),
+                const SizedBox(height: 4),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

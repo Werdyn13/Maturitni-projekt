@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/app_bar_widget.dart';
+import 'products_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -78,29 +79,29 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  GridView.count(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    children: [
-                      _buildProductCard(
-                        icon: Icons.bakery_dining,
-                        title: 'Chléb',
-                        description: 'Čerstvý domácí chléb',
-                      ),
-                      _buildProductCard(
-                        icon: Icons.cake,
-                        title: 'Koláče',
-                        description: 'Tradiční koláče',
-                      ),
-                      _buildProductCard(
-                        icon: Icons.cookie,
-                        title: 'Pečivo',
-                        description: 'Různé druhy pečiva',
-                      ),
-                    ],
+                  Center(
+                    child: Wrap(
+                      spacing: 20,
+                      runSpacing: 20,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        _buildProductCard(
+                          icon: Icons.lunch_dining,
+                          title: 'Chleba',
+                          description: 'Čerstvý domácí chléb',
+                        ),
+                        _buildProductCard(
+                          icon: Icons.bakery_dining,
+                          title: 'Rohlík',
+                          description: 'Tradiční rohlíky',
+                        ),
+                        _buildProductCard(
+                          icon: Icons.cookie,
+                          title: 'Ostatní Pečivo',
+                          description: 'Různé druhy pečiva',
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -134,33 +135,64 @@ class HomeScreen extends StatelessWidget {
     required String title,
     required String description,
   }) {
-    return Card(
-      elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 64, color: Colors.brown[700]),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.brown[800],
+    return Builder(
+      builder: (context) => InkWell(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => ProductsScreen(
+                category: title,
+                icon: icon,
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              description,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.brown[600],
+          );
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: 200,
+          height: 220,
+          child: Card(
+            elevation: 3,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.brown[50],
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icon, size: 48, color: Colors.brown[700]),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.brown[800],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    description,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.brown[600],
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
