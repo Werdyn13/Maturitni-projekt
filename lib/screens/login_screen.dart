@@ -210,7 +210,7 @@ class _LoginScreenState extends State<LoginScreen>
 
           _buildInput("Email", Icons.email, _emailController, false),
           const SizedBox(height: 16),
-          _buildInput("Password", Icons.lock, _passwordController, true),
+          _buildInput("Heslo", Icons.lock, _passwordController, true),
           const SizedBox(height: 22),
 
           if (!_isRegistering) _buildLoginButton(),
@@ -279,7 +279,7 @@ class _LoginScreenState extends State<LoginScreen>
       ),
       child: _isLoading
           ? const CircularProgressIndicator(color: Colors.white)
-          : const Text("Create Account", style: TextStyle(fontSize: 17)),
+          : const Text("Vytvořit účet", style: TextStyle(fontSize: 17)),
     );
   }
 
