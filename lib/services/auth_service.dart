@@ -3,13 +3,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class AuthService {
   final SupabaseClient _supabase = Supabase.instance.client;
 
-  // Get current user
+  // Získat aktuálního uživatele
   User? get currentUser => _supabase.auth.currentUser;
 
-  // Check if user is signed in
+  // Zkontrolovat, zda je uživatel přihlášen
   bool get isSignedIn => _supabase.auth.currentSession != null;
 
-  // Sign up with email and password
+  // Registrace pomocí emailu a hesla
   Future<AuthResponse> signUp({
     required String email,
     required String password,
@@ -22,7 +22,7 @@ class AuthService {
         password: password,
       );
       
-      // Create profile in Uzivatel table if sign up was successful
+      // Vytvořit profil v tabulce Uzivatel, pokud byla registrace úspěšná
       if (response.user != null) {
         await _supabase.from('Uzivatel').insert({
           'jmeno': jmeno ?? '',
@@ -38,7 +38,7 @@ class AuthService {
     }
   }
 
-  // Sign in with email and password
+  // Přihlášení pomocí emailu a hesla
   Future<AuthResponse> signIn({
     required String email,
     required String password,
@@ -63,10 +63,9 @@ class AuthService {
     }
   }
 
-  // Listen to auth state changes
   Stream<AuthState> get authStateChanges => _supabase.auth.onAuthStateChange;
 
-  // Get user profile from Uzivatel table by email
+  // Získat profil uživatele pomocí emailu
   Future<Map<String, dynamic>?> getUserProfile(String email) async {
     try {
       final response = await _supabase

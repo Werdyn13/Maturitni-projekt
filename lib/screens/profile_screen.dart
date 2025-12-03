@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/app_bar_widget.dart';
 import '../services/auth_service.dart';
+import 'dashboard_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -84,6 +85,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 title: 'Admin',
                                 content: _userProfile!['admin'] == true ? 'Ano' : 'Ne',
                               ),
+                              if (_userProfile!['admin'] == true) ...[
+                                const SizedBox(height: 24),
+                                ElevatedButton.icon(
+                                  onPressed: () {
+                                    Navigator.of(context).pushReplacement(
+                                      MaterialPageRoute(
+                                        builder: (context) => const DashboardScreen(),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.dashboard),
+                                  label: const Text('Přejít na Dashboard'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.brown[700],
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 32,
+                                      vertical: 16,
+                                    ),
+                                    textStyle: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ] else ...[
                               Card(
                                 elevation: 2,

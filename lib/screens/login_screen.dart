@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import 'home_screen.dart';
+import 'dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -86,10 +87,16 @@ class _LoginScreenState extends State<LoginScreen>
         password: _passwordController.text,
       );
 
+      // Kontrola jestli je uživatel admin
+      final profile = await _authService.getUserProfile(_emailController.text.trim());
+      final isAdmin = profile?['admin'] == true;
+
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          MaterialPageRoute(
+            builder: (_) => isAdmin ? const DashboardScreen() : const HomeScreen(),
+          ),
         );
       }
     } catch (e) {

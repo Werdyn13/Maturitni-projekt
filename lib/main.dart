@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/dashboard_screen.dart';
+import 'services/auth_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,12 +26,34 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: _buildInitialScreen(),
+      home: FutureBuilder(
+        future: _getInitialScreen(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          return snapshot.data ?? const LoginScreen();
+        },
+      ),
     );
   }
 
-  Widget _buildInitialScreen() {
+  Future<Widget> _getInitialScreen() async {
     final session = Supabase.instance.client.auth.currentSession;
-    return session != null ? const HomeScreen() : const LoginScreen();
+    if (session == null) {
+      return const LoginScreen();
+    }
+
+    final authService = AuthService();
+    final userEmail = session.user.email;
+    if (userEmail != null) {
+      final profile = await authService.getUserProfile(userEmail);
+      final isAdmin = profile?['admin'] == true;
+      return isAdmin ? const DashboardScreen() : const HomeScreen();
+    }
+
+    return const HomeScreen();
   }
 }
