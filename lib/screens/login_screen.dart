@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import 'home_screen.dart';
@@ -10,7 +11,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _jmenoController = TextEditingController();
@@ -20,20 +21,43 @@ class _LoginScreenState extends State<LoginScreen>
   bool _isLoading = false;
   bool _isRegistering = false;
 
-  // ANIMACE
-  double _opacity = 0.0;
-  Offset _offset = const Offset(0, 0.1);
+  // Animace pozadí
+  late final AnimationController _bgController;
+  late final Animation<Color?> _color1;
+  late final Animation<Color?> _color2;
+
+  // Animace login
+  late final AnimationController _entryController;
+  late final Animation<double> _fadeAnim;
+  late final Animation<Offset> _slideAnim;
 
   @override
   void initState() {
     super.initState();
 
-    // Spuštění animace po načtení widgetu
+    // Animace pozadí
+    _bgController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 8),
+    )..repeat(reverse: true);
+
+    _color1 = ColorTween(begin: Colors.black, end: const Color(0xFF5D4037))
+        .animate(_bgController);
+    _color2 = ColorTween(begin: const Color(0xFF8D6E63), end: const Color(0xFFD7CCC8))
+        .animate(_bgController);
+
+    // Animace pro login
+    _entryController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    _fadeAnim = CurvedAnimation(parent: _entryController, curve: Curves.easeOut);
+    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero)
+        .animate(CurvedAnimation(parent: _entryController, curve: Curves.easeOut));
+
     Future.delayed(const Duration(milliseconds: 100), () {
-      setState(() {
-        _opacity = 1.0;
-        _offset = Offset.zero;
-      });
+      if (mounted) _entryController.forward();
     });
   }
 
@@ -43,12 +67,14 @@ class _LoginScreenState extends State<LoginScreen>
     _passwordController.dispose();
     _jmenoController.dispose();
     _prijmeniController.dispose();
+    _bgController.dispose();
+    _entryController.dispose();
     super.dispose();
   }
 
   Future<void> _handleLogin() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      _showMessage('Please enter email and password');
+      _showMessage('Prosím vložte email a heslo');
       return;
     }
 
@@ -61,30 +87,24 @@ class _LoginScreenState extends State<LoginScreen>
       );
 
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
         );
       }
     } catch (e) {
-      if (mounted) {
-        _showMessage('Login failed: ${e.toString()}');
-      }
+      _showMessage('Přihlášení se nepovedlo: $e');
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      setState(() => _isLoading = false);
     }
   }
 
   Future<void> _handleRegister() async {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      _showMessage('Please enter email and password');
-      return;
-    }
-
-    if (_isRegistering &&
-        (_jmenoController.text.isEmpty || _prijmeniController.text.isEmpty)) {
-      _showMessage('Please enter first name and last name');
+    if (_emailController.text.isEmpty ||
+        _passwordController.text.isEmpty ||
+        _jmenoController.text.isEmpty ||
+        _prijmeniController.text.isEmpty) {
+      _showMessage('Prosím vyplňte všechna pole');
       return;
     }
 
@@ -98,24 +118,21 @@ class _LoginScreenState extends State<LoginScreen>
         prijmeni: _prijmeniController.text.trim(),
       );
 
-      if (mounted) {
-        _showMessage('Registration successful! You can now log in.');
-        setState(() => _isRegistering = false);
+      _showMessage('Registrace byla úspěšná! Nyní se můžete přihlásit.');
+      setState(() {
+        _isRegistering = false;
         _jmenoController.clear();
         _prijmeniController.clear();
-      }
+      });
     } catch (e) {
-      if (mounted) {
-        _showMessage('Registration failed: ${e.toString()}');
-      }
+      _showMessage('Registrace se nepovedla: $e');
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      setState(() => _isLoading = false);
     }
   }
 
   void _showMessage(String message) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
@@ -123,219 +140,157 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
+    return AnimatedBuilder(
+      animation: _bgController,
+      builder: (context, child) {
+        return Scaffold(
+          body: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [_color1.value!, _color2.value!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
             child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
-
-                // 🔥 ANIMOVANÝ WRAPPER
-                child: AnimatedOpacity(
-                  opacity: _opacity,
-                  duration: const Duration(milliseconds: 600),
-                  curve: Curves.easeOut,
-
-                  child: AnimatedSlide(
-                    offset: _offset,
-                    duration: const Duration(milliseconds: 600),
-                    curve: Curves.easeOut,
-
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 400),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            'Bánovská pekárna',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.brown[800],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Pečeme s láskou',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.brown[600],
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                          const SizedBox(height: 40),
-
-                          if (_isRegistering) ...[
-                            TextField(
-                              controller: _jmenoController,
-                              decoration: InputDecoration(
-                                labelText: 'Jméno',
-                                prefixIcon: const Icon(Icons.person),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              enabled: !_isLoading,
-                            ),
-                            const SizedBox(height: 16),
-                            TextField(
-                              controller: _prijmeniController,
-                              decoration: InputDecoration(
-                                labelText: 'Příjmení',
-                                prefixIcon: const Icon(Icons.person_outline),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              enabled: !_isLoading,
-                            ),
-                            const SizedBox(height: 16),
-                          ],
-
-                          TextField(
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            decoration: InputDecoration(
-                              labelText: 'Email',
-                              prefixIcon: const Icon(Icons.email),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            enabled: !_isLoading,
-                          ),
-                          const SizedBox(height: 16),
-
-                          TextField(
-                            controller: _passwordController,
-                            obscureText: true,
-                            decoration: InputDecoration(
-                              labelText: 'Password',
-                              prefixIcon: const Icon(Icons.lock),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            enabled: !_isLoading,
-                          ),
-                          const SizedBox(height: 24),
-
-                          if (!_isRegistering)
-                            ElevatedButton(
-                              onPressed: _isLoading ? null : _handleLogin,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.brown[700],
-                                foregroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                                Colors.white),
-                                      ),
-                                    )
-                                  : const Text(
-                                      'Login',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                            ),
-
-                          if (_isRegistering)
-                            ElevatedButton(
-                              onPressed: _isLoading ? null : _handleRegister,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.brown[700],
-                                foregroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                                Colors.white),
-                                      ),
-                                    )
-                                  : const Text(
-                                      'Create Account',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                            ),
-
-                          const SizedBox(height: 12),
-
-                          OutlinedButton(
-                            onPressed: _isLoading
-                                ? null
-                                : () {
-                                    setState(() {
-                                      _isRegistering = !_isRegistering;
-                                    });
-                                  },
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.brown[700],
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 16),
-                              side: BorderSide(color: Colors.brown[700]!),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: Text(
-                              _isRegistering ? 'Back to Login' : 'Register',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+              child: FadeTransition(
+                opacity: _fadeAnim,
+                child: SlideTransition(
+                  position: _slideAnim,
+                  child: _buildLoginBox(),
                 ),
               ),
             ),
           ),
+        );
+      },
+    );
+  }
 
-          // FOOTER
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            color: Colors.brown[700],
-            child: const Text(
-              '© 2025 Bánovská pekárna',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white, fontSize: 12),
-            ),
+  Widget _buildLoginBox() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      width: 380,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.4),
+            blurRadius: 20,
+            offset: const Offset(0, 12),
           ),
         ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            "Bánovská pekárna",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            "Pečeme s láskou",
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 18,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+          const SizedBox(height: 26),
+
+          if (_isRegistering) _buildRegisterFields(),
+
+          _buildInput("Email", Icons.email, _emailController, false),
+          const SizedBox(height: 16),
+          _buildInput("Password", Icons.lock, _passwordController, true),
+          const SizedBox(height: 22),
+
+          if (!_isRegistering) _buildLoginButton(),
+          if (_isRegistering) _buildCreateAccountButton(),
+
+          const SizedBox(height: 12),
+          _buildToggleButton(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRegisterFields() {
+    return Column(
+      children: [
+        _buildInput("Jméno", Icons.person, _jmenoController, false),
+        const SizedBox(height: 16),
+        _buildInput("Příjmení", Icons.person_outline, _prijmeniController, false),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildInput(
+      String label, IconData icon, TextEditingController controller, bool obscure) {
+    return TextField(
+      controller: controller,
+      obscureText: obscure,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.white70),
+        prefixIcon: Icon(icon, color: Colors.white),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.08),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoginButton() {
+    return TextButton(
+      onPressed: _isLoading ? null : _handleLogin,
+      style: TextButton.styleFrom(
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+      ),
+      child: _isLoading
+          ? const CircularProgressIndicator(color: Colors.white)
+          : const Text("Login", style: TextStyle(fontSize: 17)),
+    );
+  }
+
+  Widget _buildCreateAccountButton() {
+    return TextButton(
+      onPressed: _isLoading ? null : _handleRegister,
+      style: TextButton.styleFrom(
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+      ),
+      child: _isLoading
+          ? const CircularProgressIndicator(color: Colors.white)
+          : const Text("Create Account", style: TextStyle(fontSize: 17)),
+    );
+  }
+
+  Widget _buildToggleButton() {
+    return TextButton(
+      onPressed: _isLoading
+          ? null
+          : () => setState(() => _isRegistering = !_isRegistering),
+      child: Text(
+        _isRegistering ? "Zpátky na login" : "Registrovat se",
+        style: const TextStyle(color: Colors.white, fontSize: 16),
       ),
     );
   }

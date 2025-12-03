@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../screens/home_screen.dart';
 import '../screens/contact_screen.dart';
+import '../screens/profile_screen.dart';
 import '../screens/login_screen.dart';
 import '../services/auth_service.dart';
 
@@ -29,7 +30,7 @@ class AppBarWidget extends StatelessWidget implements PreferredSizeWidget {
           tooltip: 'Orders',
           onPressed: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Orders page - Coming soon')),
+              const SnackBar(content: Text('Objednávky - Připravuje se')),
             );
           },
         ),
@@ -46,8 +47,8 @@ class AppBarWidget extends StatelessWidget implements PreferredSizeWidget {
           icon: const Icon(Icons.person),
           tooltip: 'Profile',
           onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Profile page - Coming soon')),
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const ProfileScreen()),
             );
           },
         ),
