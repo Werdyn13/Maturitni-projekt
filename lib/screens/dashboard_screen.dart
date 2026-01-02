@@ -222,6 +222,148 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  Future<void> _deleteReceptura(int id) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Potvrdit smazání'),
+        content: const Text('Opravdu chcete smazat tuto recepturu?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Zrušit'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Smazat'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      await _recepturyService.deleteReceptura(id);
+      await _loadReceptury();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Receptura byla úspěšně smazána'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Chyba při mazání receptury: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showEditRecepturaDialog(Map<String, dynamic> receptura) {
+    final nazevController = TextEditingController(text: receptura['nazev']);
+    final kategorieController = TextEditingController(text: receptura['kategorie']);
+    final surovinyController = TextEditingController(text: receptura['suroviny'] ?? '');
+    final mnozstviController = TextEditingController(
+      text: receptura['mnozstvi']?.toString() ?? '',
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Upravit recepturu'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nazevController,
+                decoration: const InputDecoration(
+                  labelText: 'Název',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: kategorieController,
+                decoration: const InputDecoration(
+                  labelText: 'Kategorie',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: surovinyController,
+                decoration: const InputDecoration(
+                  labelText: 'Suroviny',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: mnozstviController,
+                decoration: const InputDecoration(
+                  labelText: 'Množství',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Zrušit'),
+          ),
+          TextButton(
+            onPressed: () async {
+              try {
+                await _recepturyService.updateReceptura(
+                  id: receptura['id'],
+                  nazev: nazevController.text,
+                  kategorie: kategorieController.text,
+                  suroviny: surovinyController.text.isEmpty ? null : surovinyController.text,
+                  mnozstvi: mnozstviController.text.isEmpty 
+                    ? null 
+                    : int.tryParse(mnozstviController.text),
+                );
+                await _loadReceptury();
+                if (mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Receptura byla úspěšně aktualizována'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Chyba při aktualizaci receptury: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text('Uložit'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildAccountsTab() {
     if (!_usersLoaded && !_isLoading) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -416,6 +558,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
+                      DataColumn(
+                        label: Text(
+                          'Akce',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ],
                     rows: _receptury.map((receptura) {
                       return DataRow(
@@ -438,6 +586,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               receptura['mnozstvi'] != null 
                                 ? receptura['mnozstvi'].toString() 
                                 : '',
+                            ),
+                          ),
+                          DataCell(
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit, color: Colors.blue),
+                                  tooltip: 'Upravit',
+                                  onPressed: () => _showEditRecepturaDialog(receptura),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                  tooltip: 'Smazat',
+                                  onPressed: () => _deleteReceptura(receptura['id']),
+                                ),
+                              ],
                             ),
                           ),
                         ],
