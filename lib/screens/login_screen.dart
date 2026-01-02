@@ -15,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen>
     with TickerProviderStateMixin {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _jmenoController = TextEditingController();
   final TextEditingController _prijmeniController = TextEditingController();
   final AuthService _authService = AuthService();
@@ -66,6 +67,7 @@ class _LoginScreenState extends State<LoginScreen>
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     _jmenoController.dispose();
     _prijmeniController.dispose();
     _bgController.dispose();
@@ -115,6 +117,11 @@ class _LoginScreenState extends State<LoginScreen>
       return;
     }
 
+    if (_passwordController.text != _confirmPasswordController.text) {
+      _showMessage('Hesla se neshodují');
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -130,6 +137,7 @@ class _LoginScreenState extends State<LoginScreen>
         _isRegistering = false;
         _jmenoController.clear();
         _prijmeniController.clear();
+        _confirmPasswordController.clear();
       });
     } catch (e) {
       _showMessage('Registrace se nepovedla: $e');
@@ -218,6 +226,10 @@ class _LoginScreenState extends State<LoginScreen>
           _buildInput("Email", Icons.email, _emailController, false),
           const SizedBox(height: 16),
           _buildInput("Heslo", Icons.lock, _passwordController, true),
+          if (_isRegistering) ...[
+            const SizedBox(height: 16),
+            _buildInput("Potvrďte heslo", Icons.lock_outline, _confirmPasswordController, true),
+          ],
           const SizedBox(height: 22),
 
           if (!_isRegistering) _buildLoginButton(),

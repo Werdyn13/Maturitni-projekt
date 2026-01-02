@@ -15,7 +15,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<Map<String, dynamic>> _users = [];
   bool _isLoading = false;
 
-  final List<String> _tabs = ['Účty', 'Produkty', 'Objednávky'];
+  final List<String> _tabs = ['Účty', 'Produkty', 'Objednávky', 'Nástěnka'];
 
   @override
   Widget build(BuildContext context) {
@@ -91,6 +91,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         return Icons.inventory;
       case 2:
         return Icons.shopping_cart;
+      case 3:
+        return Icons.dashboard;
       default:
         return Icons.dashboard;
     }
@@ -104,6 +106,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         return _buildProductsTab();
       case 2:
         return _buildOrdersTab();
+      case 3:
+        return _buildNastenkaTab();
       default:
         return const Center(child: Text('Select a tab'));
     }
@@ -313,6 +317,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
             style: TextStyle(
               fontSize: 16,
               color: Colors.grey[400],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNastenkaTab() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.dashboard, size: 64, color: Colors.grey[400]),
+          const SizedBox(height: 16),
+          Text(
+            'Nástěnka je prázdná',
+            style: TextStyle(
+              fontSize: 24,
+              color: Colors.grey[600],
             ),
           ),
         ],
