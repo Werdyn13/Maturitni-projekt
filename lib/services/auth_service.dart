@@ -116,4 +116,16 @@ class AuthService {
       rethrow;
     }
   }
+
+  // Změnit admin status uživatele
+  Future<void> toggleAdminStatus(String email, bool newAdminStatus) async {
+    try {
+      await _supabase
+          .from('Uzivatel')
+          .update({'admin': newAdminStatus})
+          .eq('mail', email);
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

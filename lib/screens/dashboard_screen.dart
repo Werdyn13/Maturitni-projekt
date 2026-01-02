@@ -12,6 +12,8 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
   final AuthService _authService = AuthService();
+  List<Map<String, dynamic>> _users = [];
+  bool _isLoading = false;
 
   final List<String> _tabs = ['Účty', 'Produkty', 'Objednávky'];
 
@@ -107,111 +109,160 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  Future<void> _loadUsers() async {
+    setState(() => _isLoading = true);
+    try {
+      final users = await _authService.getAllUsers();
+      setState(() {
+        _users = users;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Chyba při načítání uživatelů: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _toggleAdminStatus(String email, bool currentStatus) async {
+    try {
+      await _authService.toggleAdminStatus(email, !currentStatus);
+      await _loadUsers();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Admin status byl úspěšně změněn'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Chyba při změně admin statusu: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Widget _buildAccountsTab() {
-    return FutureBuilder<List<Map<String, dynamic>>>(
-      future: _authService.getAllUsers(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    if (_users.isEmpty && !_isLoading) {
+      _loadUsers();
+    }
 
-        if (snapshot.hasError) {
-          return Center(
-            child: Text(
-              'Error: ${snapshot.error}',
-              style: const TextStyle(color: Colors.red),
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Uživatelé',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.brown[800],
             ),
-          );
-        }
-
-        final users = snapshot.data ?? [];
-
-        return Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Uživatelé',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.brown[800],
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Celkem uživatelů: ${users.length}',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                ),
-              ),
-              const SizedBox(height: 24),
-              Card(
-                elevation: 2,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: SingleChildScrollView(
-                    child: DataTable(
-                      headingRowColor: WidgetStateProperty.all(Colors.brown[50]),
-                      columns: const [
-                        DataColumn(
-                          label: Text(
-                            'Email',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Celkem uživatelů: ${_users.length}',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 24),
+          Card(
+            elevation: 2,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SingleChildScrollView(
+                child: DataTable(
+                  headingRowColor: WidgetStateProperty.all(Colors.brown[50]),
+                  columns: const [
+                    DataColumn(
+                      label: Text(
+                        'Email',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Jméno',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Příjmení',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Admin',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Nastavení admina',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                  rows: _users.map((user) {
+                    final isAdmin = user['admin'] == true;
+                    final email = user['mail'] ?? '';
+                    return DataRow(
+                      cells: [
+                        DataCell(Text(email)),
+                        DataCell(Text(user['jmeno'] ?? 'N/A')),
+                        DataCell(Text(user['prijmeni'] ?? 'N/A')),
+                        DataCell(
+                          Row(
+                            children: [
+                              Icon(
+                                isAdmin ? Icons.check_circle : Icons.cancel,
+                                color: isAdmin ? Colors.green : Colors.red,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(isAdmin ? 'Ano' : 'Ne'),
+                            ],
                           ),
                         ),
-                        DataColumn(
-                          label: Text(
-                            'Jméno',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        DataColumn(
-                          label: Text(
-                            'Příjmení',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        DataColumn(
-                          label: Text(
-                            'Admin',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                        DataCell(
+                          Switch(
+                            value: isAdmin,
+                            activeThumbColor: Colors.green,
+                            onChanged: (value) {
+                              _toggleAdminStatus(email, isAdmin);
+                            },
                           ),
                         ),
                       ],
-                      rows: users.map((user) {
-                        final isAdmin = user['admin'] == true;
-                        return DataRow(
-                          cells: [
-                            DataCell(Text(user['mail'] ?? 'N/A')),
-                            DataCell(Text(user['jmeno'] ?? 'N/A')),
-                            DataCell(Text(user['prijmeni'] ?? 'N/A')),
-                            DataCell(
-                              Row(
-                                children: [
-                                  Icon(
-                                    isAdmin ? Icons.check_circle : Icons.cancel,
-                                    color: isAdmin ? Colors.green : Colors.red,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(isAdmin ? 'Ano' : 'Ne'),
-                                ],
-                              ),
-                            ),
-                          ],
-                        );
-                      }).toList(),
-                    ),
-                  ),
+                    );
+                  }).toList(),
                 ),
               ),
-            ],
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 
