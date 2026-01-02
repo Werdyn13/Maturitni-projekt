@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sidebarx/sidebarx.dart';
 import '../widgets/admin_app_bar_widget.dart';
 import '../services/auth_service.dart';
 
@@ -10,96 +11,126 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  int _selectedIndex = 0;
   final AuthService _authService = AuthService();
   List<Map<String, dynamic>> _users = [];
   bool _isLoading = false;
-
-  final List<String> _tabs = ['Účty', 'Produkty', 'Objednávky', 'Nástěnka'];
+  bool _usersLoaded = false;
+  
+  final _controller = SidebarXController(selectedIndex: 0, extended: true);
+  final _key = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _key,
       appBar: const AdminAppBarWidget(),
       backgroundColor: Colors.white,
       body: Row(
         children: [
-          // Left sidebar
-          Container(
-            width: 250,
-            color: Colors.grey[900],
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text(
-                    'Administerský panel',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+          SidebarX(
+            controller: _controller,
+            theme: SidebarXTheme(
+              margin: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.grey[900],
+                borderRadius: BorderRadius.circular(20),
+              ),
+              hoverColor: Colors.white.withOpacity(0.8),
+              hoverTextStyle: const TextStyle(color: Colors.black),
+              textStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+              selectedTextStyle: const TextStyle(color: Colors.white),
+              itemTextPadding: const EdgeInsets.only(left: 30),
+              selectedItemTextPadding: const EdgeInsets.only(left: 30),
+              itemDecoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.grey[900]!),
+              ),
+              selectedItemDecoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: Colors.brown[700]!.withOpacity(0.37),
                 ),
-                const Divider(color: Colors.white24),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: _tabs.length,
-                    itemBuilder: (context, index) {
-                      final isSelected = _selectedIndex == index;
-                      return ListTile(
-                        selected: isSelected,
-                        selectedTileColor: Colors.brown[700],
-                        leading: Icon(
-                          _getIconForTab(index),
-                          color: isSelected ? Colors.white : Colors.white70,
-                        ),
-                        title: Text(
-                          _tabs[index],
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.white70,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                          ),
-                        ),
-                        onTap: () {
-                          setState(() {
-                            _selectedIndex = index;
-                          });
-                        },
-                      );
-                    },
-                  ),
+                gradient: LinearGradient(
+                  colors: [Colors.brown[700]!, Colors.brown[600]!],
                 ),
-              ],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.28),
+                    blurRadius: 30,
+                  )
+                ],
+              ),
+              iconTheme: IconThemeData(
+                color: Colors.white.withOpacity(0.7),
+                size: 20,
+              ),
+              selectedIconTheme: const IconThemeData(
+                color: Colors.white,
+                size: 20,
+              ),
             ),
+            extendedTheme: const SidebarXTheme(
+              width: 250,
+              decoration: BoxDecoration(
+                color: Color(0xFF212121),
+              ),
+            ),
+            headerBuilder: (context, extended) {
+              return SizedBox(
+                height: 100,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Administerský panel',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: extended ? 20 : 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+            items: [
+              SidebarXItem(
+                icon: Icons.people,
+                label: 'Účty',
+              ),
+              SidebarXItem(
+                icon: Icons.inventory,
+                label: 'Produkty',
+              ),
+              SidebarXItem(
+                icon: Icons.shopping_cart,
+                label: 'Objednávky',
+              ),
+              SidebarXItem(
+                icon: Icons.dashboard,
+                label: 'Nástěnka',
+              ),
+            ],
           ),
-        
           Expanded(
-            child: _buildContent(),
+            child: AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                return _buildContent(_controller.selectedIndex);
+              },
+            ),
           ),
         ],
       ),
     );
   }
 
-  IconData _getIconForTab(int index) {
-    switch (index) {
-      case 0:
-        return Icons.people;
-      case 1:
-        return Icons.inventory;
-      case 2:
-        return Icons.shopping_cart;
-      case 3:
-        return Icons.dashboard;
-      default:
-        return Icons.dashboard;
-    }
-  }
-
-  Widget _buildContent() {
-    switch (_selectedIndex) {
+  Widget _buildContent(int selectedIndex) {
+    switch (selectedIndex) {
       case 0:
         return _buildAccountsTab();
       case 1:
@@ -120,9 +151,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       setState(() {
         _users = users;
         _isLoading = false;
+        _usersLoaded = true;
       });
     } catch (e) {
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+        _usersLoaded = true;
+      });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -159,11 +194,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildAccountsTab() {
-    if (_users.isEmpty && !_isLoading) {
-      _loadUsers();
+    if (!_usersLoaded && !_isLoading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadUsers();
+      });
     }
 
     if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (!_usersLoaded) {
       return const Center(child: CircularProgressIndicator());
     }
 
