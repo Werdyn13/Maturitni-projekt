@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sidebarx/sidebarx.dart';
 import '../widgets/admin_app_bar_widget.dart';
 import '../services/auth_service.dart';
+import '../services/receptury_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -12,9 +13,12 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final AuthService _authService = AuthService();
+  final RecepturyService _recepturyService = RecepturyService();
   List<Map<String, dynamic>> _users = [];
+  List<Map<String, dynamic>> _receptury = [];
   bool _isLoading = false;
   bool _usersLoaded = false;
+  bool _recepturyLoaded = false;
   
   final _controller = SidebarXController(selectedIndex: 0, extended: true);
   final _key = GlobalKey<ScaffoldState>();
@@ -193,6 +197,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  Future<void> _loadReceptury() async {
+    setState(() => _isLoading = true);
+    try {
+      final receptury = await _recepturyService.getAllReceptury();
+      setState(() {
+        _receptury = receptury;
+        _isLoading = false;
+        _recepturyLoaded = true;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _recepturyLoaded = true;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Chyba při načítání receptur: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Widget _buildAccountsTab() {
     if (!_usersLoaded && !_isLoading) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -312,25 +341,111 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildProductsTab() {
-    return Center(
+    if (!_recepturyLoaded && !_isLoading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadReceptury();
+      });
+    }
+
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (!_recepturyLoaded) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.inventory, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
           Text(
-            'Správa produktů',
+            'Produkty',
             style: TextStyle(
-              fontSize: 24,
-              color: Colors.grey[600],
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.brown[800],
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Brzy přibudou nové funkce...',
+            'Celkem produktů: ${_receptury.length}',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey[400],
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 24),
+          Expanded(
+            child: Card(
+              elevation: 2,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SingleChildScrollView(
+                  child: DataTable(
+                    headingRowColor: WidgetStateProperty.all(Colors.brown[50]),
+                    columns: const [
+                      DataColumn(
+                        label: Text(
+                          'ID',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Text(
+                          'Název',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Text(
+                          'Kategorie',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Text(
+                          'Suroviny',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Text(
+                          'Množství',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                    rows: _receptury.map((receptura) {
+                      return DataRow(
+                        cells: [
+                          DataCell(Text(receptura['id'].toString())),
+                          DataCell(Text(receptura['nazev'] ?? 'N/A')),
+                          DataCell(Text(receptura['kategorie'] ?? 'N/A')),
+                          DataCell(
+                            Container(
+                              constraints: const BoxConstraints(maxWidth: 300),
+                              child: Text(
+                                receptura['suroviny'] ?? 'N/A',
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 2,
+                              ),
+                            ),
+                          ),
+                          DataCell(
+                            Text(
+                              receptura['mnozstvi'] != null 
+                                ? receptura['mnozstvi'].toString() 
+                                : '',
+                            ),
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
             ),
           ),
         ],
