@@ -36,6 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   supabase_flutter: ^2.10.3
   sidebarx: ^0.17.1
+  pluto_grid: ^8.1.0
 
 dev_dependencies:
   flutter_test:

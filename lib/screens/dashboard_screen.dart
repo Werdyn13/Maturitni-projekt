@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sidebarx/sidebarx.dart';
+import 'package:pluto_grid/pluto_grid.dart';
 import '../widgets/admin_app_bar_widget.dart';
 import '../services/auth_service.dart';
 import '../services/receptury_service.dart';
@@ -227,7 +228,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Potvrdit smazání'),
-        content: const Text('Opravdu chcete smazat tuto recepturu?'),
+        content: const Text('Opravdu chcete smazat tento produkt?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -250,7 +251,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Receptura byla úspěšně smazána'),
+            content: Text('Produkt byl úspěšně smazán'),
             backgroundColor: Colors.green,
           ),
         );
@@ -259,7 +260,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Chyba při mazání receptury: $e'),
+            content: Text('Chyba při mazání produktu: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -274,11 +275,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final mnozstviController = TextEditingController(
       text: receptura['mnozstvi']?.toString() ?? '',
     );
+    final colorController = TextEditingController(text: receptura['color'] ?? '');
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Upravit recepturu'),
+        title: const Text('Upravit produkt'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -316,6 +318,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 keyboardType: TextInputType.number,
               ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: colorController,
+                decoration: const InputDecoration(
+                  labelText: 'Barva (např. červená, hnědá)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
             ],
           ),
         ),
@@ -335,13 +345,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   mnozstvi: mnozstviController.text.isEmpty 
                     ? null 
                     : int.tryParse(mnozstviController.text),
+                  color: colorController.text.isEmpty ? null : colorController.text,
                 );
                 await _loadReceptury();
                 if (mounted) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Receptura byla úspěšně aktualizována'),
+                      content: Text('Produkt byl úspěšně upraven'),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -350,7 +361,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Chyba při aktualizaci receptury: $e'),
+                      content: Text('Chyba při aktualizaci produktu: $e'),
                       backgroundColor: Colors.red,
                     ),
                   );
@@ -360,6 +371,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: const Text('Uložit'),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showAddRecepturaDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => _AddRecepturaDialog(
+        recepturyService: _recepturyService,
+        onSuccess: _loadReceptury,
       ),
     );
   }
@@ -497,117 +518,201 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
+    // PlutoGrid sloupce
+    final columns = <PlutoColumn>[
+      PlutoColumn(
+        title: 'ID',
+        field: 'id',
+        type: PlutoColumnType.number(),
+        width: 80,
+        enableEditingMode: false,
+      ),
+      PlutoColumn(
+        title: 'Název',
+        field: 'nazev',
+        type: PlutoColumnType.text(),
+        width: 200,
+        enableEditingMode: false,
+      ),
+      PlutoColumn(
+        title: 'Kategorie',
+        field: 'kategorie',
+        type: PlutoColumnType.text(),
+        width: 150,
+        enableEditingMode: false,
+        renderer: (rendererContext) {
+          final kategorie = rendererContext.cell.value?.toString() ?? '';
+          final receptura = _receptury[rendererContext.rowIdx];
+          
+          // Nastavení barev pomocí názvů
+          Color bgColor = Colors.grey.shade100;
+          if (receptura['color'] != null) {
+            final colorString = receptura['color'].toString().toLowerCase();
+              switch (colorString) {
+                case 'červená':
+                  bgColor = Colors.red.shade100;
+                  break;
+                case 'hnědá':
+                  bgColor = Colors.brown.shade100;
+                  break;
+                case 'oranžová':
+                  bgColor = Colors.orange.shade100;
+                  break;
+                case 'žlutá':
+                  bgColor = Colors.yellow.shade100;
+                  break;
+                case 'zelená':
+                  bgColor = Colors.green.shade100;
+                  break;
+                case 'modrá':
+                  bgColor = Colors.blue.shade100;
+                  break;
+                case 'fialová':
+                  bgColor = Colors.purple.shade100;
+                  break;
+                case 'růžová':
+                  bgColor = Colors.pink.shade100;
+                  break;
+                default:
+                  bgColor = Colors.grey.shade100;
+              }
+          }
+          
+          return Container(
+            width: double.infinity,
+            color: bgColor,
+            alignment: Alignment.center,
+            padding: const EdgeInsets.all(8),
+            child: Text(
+              kategorie,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          );
+        },
+      ),
+      PlutoColumn(
+        title: 'Suroviny',
+        field: 'suroviny',
+        type: PlutoColumnType.text(),
+        width: 300,
+        enableEditingMode: false,
+      ),
+      PlutoColumn(
+        title: 'Množství',
+        field: 'mnozstvi',
+        type: PlutoColumnType.text(),
+        width: 120,
+        enableEditingMode: false,
+      ),
+      PlutoColumn(
+        title: 'Akce',
+        field: 'akce',
+        type: PlutoColumnType.text(),
+        width: 120,
+        enableEditingMode: false,
+        renderer: (rendererContext) {
+          final receptura = _receptury[rendererContext.rowIdx];
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.edit, color: Colors.blue, size: 20),
+                tooltip: 'Upravit',
+                onPressed: () => _showEditRecepturaDialog(receptura),
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+                tooltip: 'Smazat',
+                onPressed: () => _deleteReceptura(receptura['id']),
+              ),
+            ],
+          );
+        },
+      ),
+    ];
+
+    // PlutoGrid řádky
+    final rows = _receptury.map((receptura) {
+      return PlutoRow(
+        cells: {
+          'id': PlutoCell(value: receptura['id'] ?? 0),
+          'nazev': PlutoCell(value: receptura['nazev'] ?? ''),
+          'kategorie': PlutoCell(value: receptura['kategorie'] ?? ''),
+          'suroviny': PlutoCell(value: receptura['suroviny'] ?? ''),
+          'mnozstvi': PlutoCell(
+            value: receptura['mnozstvi'] != null 
+              ? receptura['mnozstvi'].toString() 
+              : '',
+          ),
+          'akce': PlutoCell(value: ''),
+        },
+      );
+    }).toList();
+
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Produkty',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.brown[800],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Celkem produktů: ${_receptury.length}',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Produkty',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.brown[800],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Celkem produktů: ${_receptury.length}',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+              ElevatedButton.icon(
+                onPressed: _showAddRecepturaDialog,
+                icon: const Icon(Icons.add),
+                label: const Text('Přidat produkt'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.brown[700],
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 24),
           Expanded(
             child: Card(
               elevation: 2,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: SingleChildScrollView(
-                  child: DataTable(
-                    headingRowColor: WidgetStateProperty.all(Colors.brown[50]),
-                    columns: const [
-                      DataColumn(
-                        label: Text(
-                          'ID',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'Název',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'Kategorie',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'Suroviny',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'Množství',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      DataColumn(
-                        label: Text(
-                          'Akce',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ],
-                    rows: _receptury.map((receptura) {
-                      return DataRow(
-                        cells: [
-                          DataCell(Text(receptura['id'].toString())),
-                          DataCell(Text(receptura['nazev'] ?? 'N/A')),
-                          DataCell(Text(receptura['kategorie'] ?? 'N/A')),
-                          DataCell(
-                            Container(
-                              constraints: const BoxConstraints(maxWidth: 300),
-                              child: Text(
-                                receptura['suroviny'] ?? 'N/A',
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 2,
-                              ),
-                            ),
-                          ),
-                          DataCell(
-                            Text(
-                              receptura['mnozstvi'] != null 
-                                ? receptura['mnozstvi'].toString() 
-                                : '',
-                            ),
-                          ),
-                          DataCell(
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit, color: Colors.blue),
-                                  tooltip: 'Upravit',
-                                  onPressed: () => _showEditRecepturaDialog(receptura),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red),
-                                  tooltip: 'Smazat',
-                                  onPressed: () => _deleteReceptura(receptura['id']),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      );
-                    }).toList(),
+              child: PlutoGrid(
+                columns: columns,
+                rows: rows,
+                onLoaded: (PlutoGridOnLoadedEvent event) {
+                  // Grid is ready
+                },
+                configuration: PlutoGridConfiguration(
+                  style: PlutoGridStyleConfig(
+                    gridBorderColor: Colors.grey.shade300,
+                    gridBackgroundColor: Colors.white,
+                    rowColor: Colors.white,
+                    activatedColor: Colors.brown.shade50,
+                    checkedColor: Colors.brown.shade100,
+                    cellColorInEditState: Colors.white,
+                    columnHeight: 50,
+                    rowHeight: 60,
+                    defaultColumnTitlePadding: const EdgeInsets.all(8),
+                    defaultCellPadding: const EdgeInsets.all(8),
                   ),
                 ),
               ),
@@ -661,6 +766,194 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _AddRecepturaDialog extends StatefulWidget {
+  final RecepturyService recepturyService;
+  final VoidCallback onSuccess;
+
+  const _AddRecepturaDialog({
+    required this.recepturyService,
+    required this.onSuccess,
+  });
+
+  @override
+  State<_AddRecepturaDialog> createState() => _AddRecepturaDialogState();
+}
+
+class _AddRecepturaDialogState extends State<_AddRecepturaDialog> {
+  final nazevController = TextEditingController();
+  final kategorieController = TextEditingController();
+  final surovinyController = TextEditingController();
+  final mnozstviController = TextEditingController();
+  final colorController = TextEditingController();
+
+  bool _nazevError = false;
+  bool _kategorieError = false;
+
+  @override
+  void dispose() {
+    nazevController.dispose();
+    kategorieController.dispose();
+    surovinyController.dispose();
+    mnozstviController.dispose();
+    colorController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleSubmit() async {
+    setState(() {
+      _nazevError = nazevController.text.isEmpty;
+      _kategorieError = kategorieController.text.isEmpty;
+    });
+
+    if (_nazevError || _kategorieError) {
+      return;
+    }
+
+    try {
+      await widget.recepturyService.addReceptura(
+        nazev: nazevController.text,
+        kategorie: kategorieController.text,
+        suroviny: surovinyController.text.isEmpty ? null : surovinyController.text,
+        mnozstvi: mnozstviController.text.isEmpty 
+          ? null 
+          : int.tryParse(mnozstviController.text),
+        color: colorController.text.isEmpty ? null : colorController.text,
+      );
+      widget.onSuccess();
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Produkt byl úspěšně přidán'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Chyba při přidávání produktu: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Přidat nový produkt'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: nazevController,
+              decoration: InputDecoration(
+                labelText: 'Název *',
+                border: const OutlineInputBorder(),
+                errorBorder: _nazevError
+                    ? const OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      )
+                    : null,
+                focusedErrorBorder: _nazevError
+                    ? const OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      )
+                    : null,
+              ),
+              onChanged: (value) {
+                if (_nazevError && value.isNotEmpty) {
+                  setState(() => _nazevError = false);
+                }
+              },
+            ),
+            if (_nazevError)
+              const Padding(
+                padding: EdgeInsets.only(top: 8, left: 12),
+                child: Text(
+                  'Název je povinný',
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: kategorieController,
+              decoration: InputDecoration(
+                labelText: 'Kategorie *',
+                border: const OutlineInputBorder(),
+                errorBorder: _kategorieError
+                    ? const OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      )
+                    : null,
+                focusedErrorBorder: _kategorieError
+                    ? const OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.red, width: 2),
+                      )
+                    : null,
+              ),
+              onChanged: (value) {
+                if (_kategorieError && value.isNotEmpty) {
+                  setState(() => _kategorieError = false);
+                }
+              },
+            ),
+            if (_kategorieError)
+              const Padding(
+                padding: EdgeInsets.only(top: 8, left: 12),
+                child: Text(
+                  'Kategorie je povinná',
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: surovinyController,
+              decoration: const InputDecoration(
+                labelText: 'Suroviny',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: mnozstviController,
+              decoration: const InputDecoration(
+                labelText: 'Množství',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: colorController,
+              decoration: const InputDecoration(
+                labelText: 'Barva (např. červená, hnědá)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Zrušit'),
+        ),
+        TextButton(
+          onPressed: _handleSubmit,
+          child: const Text('Přidat'),
+        ),
+      ],
     );
   }
 }

@@ -1,9 +1,54 @@
 import 'package:flutter/material.dart';
 import '../widgets/app_bar_widget.dart';
+import '../services/receptury_service.dart';
 import 'products_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final RecepturyService _recepturyService = RecepturyService();
+  List<String> _categories = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final receptury = await _recepturyService.getAllReceptury();
+      final categoriesSet = receptury
+          .map((r) => r['kategorie']?.toString() ?? '')
+          .where((c) => c.isNotEmpty)
+          .toSet();
+      
+      setState(() {
+        _categories = categoriesSet.toList()..sort();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  IconData _getIconForCategory(String category) {
+    switch (category.toLowerCase()) {
+      case 'chleby':
+        return Icons.lunch_dining;
+      case 'rohlík':
+      default:
+        return Icons.bakery_dining;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +61,7 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-            // Hero Section
+            
             Container(
               height: 300,
               decoration: BoxDecoration(
@@ -72,6 +117,7 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Naše produkty',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
@@ -80,28 +126,20 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   Center(
-                    child: Wrap(
-                      spacing: 20,
-                      runSpacing: 20,
-                      alignment: WrapAlignment.center,
-                      children: [
-                        _buildProductCard(
-                          icon: Icons.lunch_dining,
-                          title: 'Chleba',
-                          description: 'Čerstvý domácí chléb',
-                        ),
-                        _buildProductCard(
-                          icon: Icons.bakery_dining,
-                          title: 'Rohlík',
-                          description: 'Tradiční rohlíky',
-                        ),
-                        _buildProductCard(
-                          icon: Icons.cookie,
-                          title: 'Ostatní Pečivo',
-                          description: 'Různé druhy pečiva',
-                        ),
-                      ],
-                    ),
+                    child: _isLoading
+                        ? const CircularProgressIndicator()
+                        : Wrap(
+                            spacing: 20,
+                            runSpacing: 20,
+                            alignment: WrapAlignment.center,
+                            children: _categories.map((category) {
+                              return _buildProductCard(
+                                icon: _getIconForCategory(category),
+                                title: category,
+                                description: 'Prozkoumejte naši nabídku',
+                              );
+                            }).toList(),
+                          ),
                   ),
                 ],
               ),

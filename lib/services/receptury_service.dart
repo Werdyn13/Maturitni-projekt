@@ -22,6 +22,7 @@ class RecepturyService {
     required String kategorie,
     String? suroviny,
     int? mnozstvi,
+    String? color,
   }) async {
     try {
       await _supabase.from('Receptury').insert({
@@ -29,6 +30,7 @@ class RecepturyService {
         'kategorie': kategorie,
         'suroviny': suroviny,
         'mnozstvi': mnozstvi,
+        'color': color,
       });
     } catch (e) {
       rethrow;
@@ -42,6 +44,7 @@ class RecepturyService {
     String? kategorie,
     String? suroviny,
     int? mnozstvi,
+    String? color,
   }) async {
     try {
       final updateData = <String, dynamic>{};
@@ -50,6 +53,7 @@ class RecepturyService {
       if (kategorie != null) updateData['kategorie'] = kategorie;
       if (suroviny != null) updateData['suroviny'] = suroviny;
       if (mnozstvi != null) updateData['mnozstvi'] = mnozstvi;
+      if (color != null) updateData['color'] = color;
       
       await _supabase
           .from('Receptury')
