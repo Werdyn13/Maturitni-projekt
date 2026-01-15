@@ -699,7 +699,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 columns: columns,
                 rows: rows,
                 onLoaded: (PlutoGridOnLoadedEvent event) {
-                  // Grid is ready
                 },
                 configuration: PlutoGridConfiguration(
                   style: PlutoGridStyleConfig(

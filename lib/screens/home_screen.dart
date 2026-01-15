@@ -109,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            // Products Section
+            // Sekce kategorií produktů
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: Column(
