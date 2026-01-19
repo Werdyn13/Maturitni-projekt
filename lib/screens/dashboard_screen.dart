@@ -4,6 +4,7 @@ import 'package:pluto_grid/pluto_grid.dart';
 import '../widgets/admin_app_bar_widget.dart';
 import '../services/auth_service.dart';
 import '../services/receptury_service.dart';
+import 'add_task_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -781,92 +782,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _showAddTaskDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => _AddTaskDialog(
-        onSuccess: () {
-        },
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AddTaskScreen(),
       ),
-    );
-  }
-}
-
-class _AddTaskDialog extends StatefulWidget {
-  final VoidCallback onSuccess;
-
-  const _AddTaskDialog({
-    required this.onSuccess,
-  });
-
-  @override
-  State<_AddTaskDialog> createState() => _AddTaskDialogState();
-}
-
-class _AddTaskDialogState extends State<_AddTaskDialog> {
-  final titleController = TextEditingController();
-  final descriptionController = TextEditingController();
-  bool _titleError = false;
-
-  @override
-  void dispose() {
-    titleController.dispose();
-    descriptionController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _handleSubmit() async {
-    setState(() {
-      _titleError = titleController.text.isEmpty;
-    });
-
-    if (_titleError) {
-      return;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Přidat nový úkol'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: titleController,
-              decoration: InputDecoration(
-                labelText: 'Název úkolu',
-                border: const OutlineInputBorder(),
-                errorText: _titleError ? 'Název je povinný' : null,
-              ),
-              onChanged: (value) {
-                if (_titleError && value.isNotEmpty) {
-                  setState(() => _titleError = false);
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: descriptionController,
-              decoration: const InputDecoration(
-                labelText: 'Popis',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 4,
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Zrušit'),
-        ),
-        TextButton(
-          onPressed: _handleSubmit,
-          child: const Text('Přidat'),
-        ),
-      ],
     );
   }
 }
