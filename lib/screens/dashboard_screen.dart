@@ -4,6 +4,7 @@ import 'package:pluto_grid/pluto_grid.dart';
 import '../widgets/admin_app_bar_widget.dart';
 import '../services/auth_service.dart';
 import '../services/receptury_service.dart';
+import '../services/nastenka_service.dart';
 import 'add_task_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -16,11 +17,14 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final AuthService _authService = AuthService();
   final RecepturyService _recepturyService = RecepturyService();
+  final NastenkaService _nastenkaService = NastenkaService();
   List<Map<String, dynamic>> _users = [];
   List<Map<String, dynamic>> _receptury = [];
+  List<Map<String, dynamic>> _tasks = [];
   bool _isLoading = false;
   bool _usersLoaded = false;
   bool _recepturyLoaded = false;
+  bool _tasksLoaded = false;
   
   final _controller = SidebarXController(selectedIndex: 0, extended: true);
   final _key = GlobalKey<ScaffoldState>();
@@ -750,44 +754,195 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  Future<void> _loadTasks() async {
+    setState(() => _isLoading = true);
+    try {
+      final tasks = await _nastenkaService.getAllTasks();
+      setState(() {
+        _tasks = tasks;
+        _isLoading = false;
+        _tasksLoaded = true;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _tasksLoaded = true;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Chyba při načítání úkolů: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _completeTask(int id) async {
+    try {
+      await _nastenkaService.completeTask(id);
+      await _loadTasks();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Úkol byl označen jako splněný'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Chyba při označování úkolu: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Widget _buildNastenkaTab() {
-    return Center(
+    if (!_tasksLoaded && !_isLoading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadTasks();
+      });
+    }
+
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (!_tasksLoaded) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.dashboard, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(
-            'Nástěnka je prázdná',
-            style: TextStyle(
-              fontSize: 24,
-              color: Colors.grey[600],
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Nástěnka',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Celkem úkolů: ${_tasks.length}',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddTaskScreen(),
+                    ),
+                  );
+                  if (result == true) {
+                    _loadTasks();
+                  }
+                },
+                icon: const Icon(Icons.add),
+                label: const Text('Přidat úkol'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: () {
-              _showAddTaskDialog();
-            },
-            icon: const Icon(Icons.add),
-            label: const Text('Přidat úkol'),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              textStyle: const TextStyle(fontSize: 16),
-            ),
+          Expanded(
+            child: _tasks.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.dashboard, size: 64, color: Colors.grey[400]),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Nástěnka je prázdná',
+                          style: TextStyle(
+                            fontSize: 24,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: _tasks.length,
+                    itemBuilder: (context, index) {
+                      final task = _tasks[index];
+                      final date = DateTime.parse(task['na_den']);
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        elevation: 2,
+                        child: ListTile(
+                          leading: Checkbox(
+                            value: false,
+                            onChanged: (value) {
+                              if (value == true) {
+                                _completeTask(task['id']);
+                              }
+                            },
+                          ),
+                          title: Text(
+                            task['text_ukolu'] ?? '',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 4),
+                              Text('Pro: ${task['pro_uzivatele'] ?? ''}'),
+                              Text('Datum: ${date.day}.${date.month}.${date.year}'),
+                              if (task['opakovat'] != null && task['opakovat'] != 'Žádné')
+                                Text('Opakovat: ${task['opakovat']}'),
+                            ],
+                          ),
+                          isThreeLine: true,
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
     );
   }
 
-  void _showAddTaskDialog() {
-    Navigator.push(
+  void _showAddTaskDialog() async {
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => const AddTaskScreen(),
       ),
     );
+    if (result == true) {
+      _loadTasks();
+    }
   }
 }
 
