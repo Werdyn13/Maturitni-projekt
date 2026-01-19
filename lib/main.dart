@@ -25,6 +25,7 @@ class MyApp extends StatelessWidget {
       title: 'Aplikace pro pekárnu',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
+        scaffoldBackgroundColor: Colors.white,
       ),
       home: FutureBuilder(
         future: _getInitialScreen(),

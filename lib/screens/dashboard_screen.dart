@@ -53,10 +53,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               selectedItemDecoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: Colors.brown[700]!.withOpacity(0.37),
+                  color: Colors.black.withOpacity(0.37),
                 ),
-                gradient: LinearGradient(
-                  colors: [Colors.brown[700]!, Colors.brown[600]!],
+                gradient: const LinearGradient(
+                  colors: [Colors.black, Colors.grey],
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -407,10 +407,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Text(
             'Uživatelé',
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: Colors.brown[800],
+              color: Colors.black,
             ),
           ),
           const SizedBox(height: 8),
@@ -428,7 +428,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               scrollDirection: Axis.horizontal,
               child: SingleChildScrollView(
                 child: DataTable(
-                  headingRowColor: WidgetStateProperty.all(Colors.brown[50]),
+                  headingRowColor: WidgetStateProperty.all(Colors.grey[100]),
                   columns: const [
                     DataColumn(
                       label: Text(
@@ -663,10 +663,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   Text(
                     'Produkty',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.brown[800],
+                      color: Colors.black,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -684,7 +684,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 icon: const Icon(Icons.add),
                 label: const Text('Přidat produkt'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.brown[700],
+                  backgroundColor: Colors.black,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 ),
@@ -705,8 +705,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     gridBorderColor: Colors.grey.shade300,
                     gridBackgroundColor: Colors.white,
                     rowColor: Colors.white,
-                    activatedColor: Colors.brown.shade50,
-                    checkedColor: Colors.brown.shade100,
+                    activatedColor: Colors.grey.shade100,
+                    checkedColor: Colors.grey.shade200,
                     cellColorInEditState: Colors.white,
                     columnHeight: 50,
                     rowHeight: 60,

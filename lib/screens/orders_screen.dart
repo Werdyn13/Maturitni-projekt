@@ -22,10 +22,10 @@ class OrdersScreen extends StatelessWidget {
                       Text(
                         'Moje objednávky',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
-                          color: Colors.brown[800],
+                          color: Colors.black,
                         ),
                       ),
                       const SizedBox(height: 40),
@@ -39,16 +39,16 @@ class OrdersScreen extends StatelessWidget {
                               Icon(
                                 Icons.shopping_basket_outlined,
                                 size: 80,
-                                color: Colors.brown[300],
+                                color: Colors.grey[400],
                               ),
                               const SizedBox(height: 24),
                               Text(
                                 'Zatím nemáte žádné objednávky',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.brown[800],
+                                  color: Colors.black,
                                 ),
                               ),
                               const SizedBox(height: 12),
@@ -57,7 +57,7 @@ class OrdersScreen extends StatelessWidget {
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: Colors.brown[600],
+                                  color: Colors.grey[700],
                                 ),
                               ),
                             ],
@@ -73,7 +73,7 @@ class OrdersScreen extends StatelessWidget {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
-            color: Colors.brown[700],
+            color: Colors.black,
             child: Column(
               children: [
                 Text(

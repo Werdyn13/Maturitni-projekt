@@ -55,14 +55,14 @@ class _ProductsScreenState extends State<ProductsScreen> {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(24),
-            color: Colors.brown[50],
+            color: Colors.grey[100],
             child: Text(
               widget.category,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
-                color: Colors.brown[800],
+                color: Colors.black,
               ),
             ),
           ),
@@ -79,14 +79,14 @@ class _ProductsScreenState extends State<ProductsScreen> {
                             Icon(
                               widget.icon,
                               size: 80,
-                              color: Colors.brown[300],
+                              color: Colors.grey[400],
                             ),
                             const SizedBox(height: 16),
                             Text(
                               'Žádné produkty',
                               style: TextStyle(
                                 fontSize: 20,
-                                color: Colors.brown[600],
+                                color: Colors.grey[700],
                               ),
                             ),
                           ],
@@ -95,13 +95,19 @@ class _ProductsScreenState extends State<ProductsScreen> {
                     : Center(
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(
-                            maxWidth: 600,
+                            maxWidth: 1200,
                           ),
-                          child: ListView.builder(
-                            padding: const EdgeInsets.all(16),
+                          child: GridView.builder(
+                            padding: const EdgeInsets.all(24),
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              crossAxisSpacing: 20,
+                              mainAxisSpacing: 20,
+                              childAspectRatio: 0.8,
+                            ),
                             itemCount: _products.length,
                             itemBuilder: (context, index) {
-                              return _buildProductRow(_products[index]);
+                              return _buildProductCard(_products[index]);
                             },
                           ),
                         ),
@@ -112,7 +118,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
-            color: Colors.brown[700],
+            color: Colors.black,
             child: const Text(
               '© 2025 Bánovská pekárna',
               textAlign: TextAlign.center,
@@ -125,34 +131,85 @@ class _ProductsScreenState extends State<ProductsScreen> {
   }
 
   // Karta produktu
-  Widget _buildProductRow(Map<String, dynamic> product) {
+  Widget _buildProductCard(Map<String, dynamic> product) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      elevation: 1,
-      child: ListTile(
-        dense: true,
-        leading: Icon(
-          widget.icon,
-          size: 32,
-          color: Colors.brown[600],
-        ),
-        title: Text(
-          product['nazev'] ?? 'Bez názvu',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.brown[800],
-          ),
-        ),
-        subtitle: product['mnozstvi'] != null
-            ? Text(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Ikona produktu
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                widget.icon,
+                size: 48,
+                color: Colors.black,
+              ),
+            ),
+
+            // Název produktu
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text(
+                product['nazev'] ?? 'Bez názvu',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.brown[800],
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+
+            // Množství
+            if (product['mnozstvi'] != null)
+              Text(
                 'Množství: ${product['mnozstvi']} ks',
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 14,
                   color: Colors.brown[600],
                 ),
-              )
-            : null,
+              ),
+
+            const SizedBox(height: 12),
+
+            // Tlačítko Koupit
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'Koupit',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

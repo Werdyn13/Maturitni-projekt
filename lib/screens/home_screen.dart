@@ -65,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               height: 300,
               decoration: BoxDecoration(
-                color: Colors.brown[100],
+                color: Colors.grey[200],
                 image: const DecorationImage(
                   image: NetworkImage('https://via.placeholder.com/1200x300/8D6E63/FFFFFF?text=Fresh+Baked+Goods'),
                   fit: BoxFit.cover,
@@ -81,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: TextStyle(
                         fontSize: 48,
                         fontWeight: FontWeight.bold,
-                        color: Colors.brown[900],
+                        color: Colors.black,
                         shadows: [
                           Shadow(
                             color: Colors.white.withOpacity(0.8),
@@ -96,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: TextStyle(
                         fontSize: 24,
                         fontStyle: FontStyle.italic,
-                        color: Colors.brown[800],
+                        color: Colors.grey[800],
                         shadows: [
                           Shadow(
                             color: Colors.white.withOpacity(0.8),
@@ -118,10 +118,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     'Naše produkty',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
-                      color: Colors.brown[800],
+                      color: Colors.black,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -151,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
-            color: Colors.brown[700],
+            color: Colors.black,
             child: Column(
               children: [
                 Text(
@@ -202,18 +202,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.brown[50],
+                      color: Colors.grey[100],
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(icon, size: 48, color: Colors.brown[700]),
+                    child: Icon(icon, size: 48, color: Colors.black),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     title,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.brown[800],
+                      color: Colors.black,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -222,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.brown[600],
+                      color: Colors.grey[700],
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,

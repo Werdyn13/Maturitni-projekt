@@ -22,10 +22,10 @@ class ContactScreen extends StatelessWidget {
                       Text(
                         'Kontaktní informace',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
-                          color: Colors.brown[800],
+                          color: Colors.black,
                         ),
                       ),
                       const SizedBox(height: 40),
@@ -56,10 +56,10 @@ class ContactScreen extends StatelessWidget {
                       Text(
                         'Otevírací doba',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Colors.brown[800],
+                          color: Colors.black,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -73,7 +73,7 @@ class ContactScreen extends StatelessWidget {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
-            color: Colors.brown[700],
+            color: Colors.black,
             child: Column(
               children: [
                 Text(
@@ -101,7 +101,7 @@ class ContactScreen extends StatelessWidget {
         padding: const EdgeInsets.all(20.0),
         child: Row(
           children: [
-            Icon(icon, size: 40, color: Colors.brown[700]),
+            Icon(icon, size: 40, color: Colors.black),
             const SizedBox(width: 20),
             Expanded(
               child: Column(
@@ -109,10 +109,10 @@ class ContactScreen extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.brown[800],
+                      color: Colors.black,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -120,7 +120,7 @@ class ContactScreen extends StatelessWidget {
                     content,
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.brown[600],
+                      color: Colors.grey[700],
                     ),
                   ),
                 ],
@@ -160,15 +160,15 @@ class ContactScreen extends StatelessWidget {
             day,
             style: TextStyle(
               fontSize: 16,
-              color: Colors.brown[700],
+              color: Colors.grey[700],
             ),
           ),
           Text(
             hours,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.brown[800],
+              color: Colors.black,
             ),
           ),
         ],

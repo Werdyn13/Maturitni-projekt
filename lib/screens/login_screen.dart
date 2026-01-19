@@ -43,9 +43,9 @@ class _LoginScreenState extends State<LoginScreen>
       duration: const Duration(seconds: 8),
     )..repeat(reverse: true);
 
-    _color1 = ColorTween(begin: Colors.black, end: const Color(0xFF5D4037))
+    _color1 = ColorTween(begin: Colors.black, end: const Color(0xFF424242))
         .animate(_bgController);
-    _color2 = ColorTween(begin: const Color(0xFF8D6E63), end: const Color(0xFFD7CCC8))
+    _color2 = ColorTween(begin: const Color(0xFF616161), end: const Color(0xFF9E9E9E))
         .animate(_bgController);
 
     // Animace pro login

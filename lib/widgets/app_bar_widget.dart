@@ -23,7 +23,7 @@ class AppBarWidget extends StatelessWidget implements PreferredSizeWidget {
           );
         },
       ),
-      backgroundColor: Colors.brown[700],
+      backgroundColor: Colors.black,
       foregroundColor: Colors.white,
       actions: [
         IconButton(

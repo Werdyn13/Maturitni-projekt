@@ -121,10 +121,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Text(
                               'Profil',
                               textAlign: TextAlign.center,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 32,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.brown[800],
+                                color: Colors.black,
                               ),
                             ),
                             const SizedBox(height: 40),
@@ -218,7 +218,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   icon: const Icon(Icons.edit),
                                   label: const Text('Upravit profil'),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.brown[700],
+                                    backgroundColor: Colors.black,
                                     foregroundColor: Colors.white,
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 32,
@@ -244,7 +244,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   icon: const Icon(Icons.dashboard),
                                   label: const Text('Přejít na Dashboard'),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.brown[700],
+                                    backgroundColor: Colors.black,
                                     foregroundColor: Colors.white,
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 32,
@@ -267,7 +267,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontSize: 16,
-                                      color: Colors.brown[600],
+                                      color: Colors.grey[700],
                                     ),
                                   ),
                                 ),
@@ -282,7 +282,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
-            color: Colors.brown[700],
+            color: Colors.black,
             child: Column(
               children: [
                 Text(
@@ -310,7 +310,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.all(20.0),
         child: Row(
           children: [
-            Icon(icon, size: 40, color: Colors.brown[700]),
+            Icon(icon, size: 40, color: Colors.black),
             const SizedBox(width: 20),
             Expanded(
               child: Column(
@@ -318,10 +318,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.brown[800],
+                      color: Colors.black,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -329,7 +329,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     content,
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.brown[600],
+                      color: Colors.grey[700],
                     ),
                   ),
                 ],
@@ -352,7 +352,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.all(20.0),
         child: Row(
           children: [
-            Icon(icon, size: 40, color: Colors.brown[700]),
+            Icon(icon, size: 40, color: Colors.black),
             const SizedBox(width: 20),
             Expanded(
               child: Column(
@@ -360,10 +360,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.brown[800],
+                      color: Colors.black,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -380,7 +380,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.brown[700]!),
+                        borderSide: const BorderSide(color: Colors.black),
                       ),
                     ),
                   ),
