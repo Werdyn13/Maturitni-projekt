@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/app_bar_widget.dart';
 import '../services/receptury_service.dart';
+import '../services/orders_service.dart';
 
 class ProductsScreen extends StatefulWidget {
   final String category;
@@ -18,6 +19,7 @@ class ProductsScreen extends StatefulWidget {
 
 class _ProductsScreenState extends State<ProductsScreen> {
   final RecepturyService _recepturyService = RecepturyService();
+  final OrdersService _ordersService = OrdersService();
   List<Map<String, dynamic>> _products = [];
   bool _isLoading = true;
 
@@ -42,6 +44,35 @@ class _ProductsScreenState extends State<ProductsScreen> {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _addToCart(Map<String, dynamic> product) async {
+    try {
+      await _ordersService.addItemToOrder(
+        zboziId: product['id'],
+        mnozstvi: 1,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${product['nazev']} přidáno do košíku'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Chyba: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
@@ -189,8 +220,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                },
+                onPressed: () => _addToCart(product),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
                   foregroundColor: Colors.white,
