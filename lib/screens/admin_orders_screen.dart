@@ -13,6 +13,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   final OrdersService _ordersService = OrdersService();
   List<Map<String, dynamic>> _orders = [];
   bool _isLoading = true;
+  PlutoGridStateManager? stateManager;
 
   @override
   void initState() {
@@ -21,6 +22,10 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   }
 
   Future<void> _loadOrders() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
     try {
       final orders = await _ordersService.getAllOrders();
       setState(() {
@@ -358,9 +363,12 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                 : Card(
                     elevation: 2,
                     child: PlutoGrid(
+                      key: ValueKey(_orders.length),
                       columns: columns,
                       rows: rows,
-                      onLoaded: (PlutoGridOnLoadedEvent event) {},
+                      onLoaded: (PlutoGridOnLoadedEvent event) {
+                        stateManager = event.stateManager;
+                      },
                       configuration: PlutoGridConfiguration(
                         style: PlutoGridStyleConfig(
                           gridBorderColor: Colors.grey[300]!,
