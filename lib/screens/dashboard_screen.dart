@@ -6,6 +6,7 @@ import '../services/auth_service.dart';
 import '../services/receptury_service.dart';
 import '../services/nastenka_service.dart';
 import 'add_task_screen.dart';
+import 'admin_orders_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -728,30 +729,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildOrdersTab() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.shopping_cart, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(
-            'Správa objednávek',
-            style: TextStyle(
-              fontSize: 24,
-              color: Colors.grey[600],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Brzy přibudou nové funkce...',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[400],
-            ),
-          ),
-        ],
-      ),
-    );
+    return const AdminOrdersScreen();
   }
 
   Future<void> _loadTasks() async {

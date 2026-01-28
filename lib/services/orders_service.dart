@@ -183,6 +183,25 @@ class OrdersService {
     }
   }
 
+  // Smazat objednávku
+  Future<void> deleteOrder(int orderId) async {
+    try {
+      // Nejprve smazat všechny položky objednávky
+      await _supabase
+          .from('ObjednavkaZbozi')
+          .delete()
+          .eq('objednavka_id', orderId);
+
+      // Pak smazat objednávku
+      await _supabase
+          .from('Objednavky')
+          .delete()
+          .eq('id', orderId);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   
   Future<Map<String, dynamic>?> getCurrentCart() async {
     try {
@@ -204,7 +223,6 @@ class OrdersService {
       final orders = await _supabase
           .from('Objednavky')
           .select('*, Uzivatel(jmeno, prijmeni, mail)')
-          .neq('stav', 'nova')
           .order('datum_objednavky', ascending: false);
 
       return List<Map<String, dynamic>>.from(orders);
