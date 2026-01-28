@@ -964,10 +964,21 @@ class _AddRecepturaDialogState extends State<_AddRecepturaDialog> {
   final kategorieController = TextEditingController();
   final surovinyController = TextEditingController();
   final mnozstviController = TextEditingController();
-  final colorController = TextEditingController();
+  String? selectedColor;
 
   bool _nazevError = false;
   bool _kategorieError = false;
+  
+  final List<String> availableColors = [
+    'červená',
+    'hnědá',
+    'oranžová',
+    'žlutá',
+    'zelená',
+    'modrá',
+    'fialová',
+    'růžová',
+  ];
 
   @override
   void dispose() {
@@ -975,7 +986,6 @@ class _AddRecepturaDialogState extends State<_AddRecepturaDialog> {
     kategorieController.dispose();
     surovinyController.dispose();
     mnozstviController.dispose();
-    colorController.dispose();
     super.dispose();
   }
 
@@ -997,7 +1007,7 @@ class _AddRecepturaDialogState extends State<_AddRecepturaDialog> {
         mnozstvi: mnozstviController.text.isEmpty 
           ? null 
           : int.tryParse(mnozstviController.text),
-        color: colorController.text.isEmpty ? null : colorController.text,
+        color: selectedColor,
       );
       widget.onSuccess();
       if (mounted) {
@@ -1110,12 +1120,24 @@ class _AddRecepturaDialogState extends State<_AddRecepturaDialog> {
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 16),
-            TextField(
-              controller: colorController,
+            DropdownButtonFormField<String>(
+              value: selectedColor,
               decoration: const InputDecoration(
-                labelText: 'Barva (např. červená, hnědá)',
+                labelText: 'Barva',
                 border: OutlineInputBorder(),
               ),
+              hint: const Text('Vyberte barvu'),
+              items: availableColors.map((color) {
+                return DropdownMenuItem<String>(
+                  value: color,
+                  child: Text(color),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedColor = value;
+                });
+              },
             ),
           ],
         ),
