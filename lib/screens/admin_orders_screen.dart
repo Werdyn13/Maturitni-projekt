@@ -64,6 +64,30 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     }
   }
 
+  Future<void> _updateOrderStatus(int orderId, String newStatus) async {
+    try {
+      await _ordersService.updateOrderStatus(orderId, newStatus);
+      await _loadOrders();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Stav objednávky byl změněn'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Chyba: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _acceptOrder(int orderId) async {
     try {
       await _ordersService.confirmOrder(orderId);
@@ -239,7 +263,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
         title: 'Akce',
         field: 'akce',
         type: PlutoColumnType.text(),
-        width: 140,
+        width: 200,
         enableEditingMode: false,
         renderer: (rendererContext) {
           final order = _orders[rendererContext.rowIdx];
@@ -249,15 +273,29 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (status == 'nova')
-                IconButton(
-                  icon: const Icon(Icons.check_circle, color: Colors.green, size: 20),
-                  tooltip: 'Přijmout',
-                  onPressed: () => _acceptOrder(order['id']),
-                ),
+              DropdownButton<String>(
+                value: status,
+                isDense: true,
+                underline: Container(),
+                items: const [
+                  DropdownMenuItem(value: 'nova', child: Text('Nová', style: TextStyle(fontSize: 12))),
+                  DropdownMenuItem(value: 'potvrzena', child: Text('Potvrzená', style: TextStyle(fontSize: 12))),
+                  DropdownMenuItem(value: 'pripravena', child: Text('Připravená', style: TextStyle(fontSize: 12))),
+                  DropdownMenuItem(value: 'dokoncena', child: Text('Dokončená', style: TextStyle(fontSize: 12))),
+                  DropdownMenuItem(value: 'zrusena', child: Text('Zrušená', style: TextStyle(fontSize: 12))),
+                ],
+                onChanged: (newStatus) {
+                  if (newStatus != null && newStatus != status) {
+                    _updateOrderStatus(order['id'], newStatus);
+                  }
+                },
+              ),
+              const SizedBox(width: 8),
               IconButton(
                 icon: const Icon(Icons.delete, color: Colors.red, size: 20),
                 tooltip: 'Smazat',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
                 onPressed: () => _deleteOrder(order['id']),
               ),
             ],

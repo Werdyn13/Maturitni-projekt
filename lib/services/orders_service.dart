@@ -155,6 +155,14 @@ class OrdersService {
         .eq('id', orderId);
   }
 
+  // Aktualizovat stav objednávky
+  Future<void> updateOrderStatus(int orderId, String newStatus) async {
+    await _supabase
+        .from('Objednavky')
+        .update({'stav': newStatus})
+        .eq('id', orderId);
+  }
+
   // Smazat objednávku
   Future<void> deleteOrder(int orderId) async {
     // Nejprve smazat všechny položky objednávky

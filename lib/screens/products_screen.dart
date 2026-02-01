@@ -47,17 +47,17 @@ class _ProductsScreenState extends State<ProductsScreen> {
     }
   }
 
-  Future<void> _addToCart(Map<String, dynamic> product) async {
+  Future<void> _addToCart(Map<String, dynamic> product, int quantity) async {
     try {
       await _ordersService.addItemToOrder(
         zboziId: product['id'],
-        mnozstvi: 1,
+        mnozstvi: quantity,
       );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${product['nazev']} přidáno do košíku'),
+            content: Text('${product['nazev']} ($quantity ks) přidáno do košíku'),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 2),
           ),
@@ -163,6 +163,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
   // Karta produktu
   Widget _buildProductCard(Map<String, dynamic> product) {
+    final TextEditingController quantityController = TextEditingController(text: '1');
+
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
@@ -216,21 +218,62 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
             const SizedBox(height: 12),
 
-            // Tlačítko Koupit
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => _addToCart(product),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+            // Input pro množství a tlačítko Koupit
+            Row(
+              children: [
+                SizedBox(
+                  width: 60,
+                  child: TextField(
+                    controller: quantityController,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    decoration: InputDecoration(
+                      hintText: '1',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                      isDense: true,
+                    ),
                   ),
                 ),
-                child: const Text(
-                  'Koupit',
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      final inputText = quantityController.text.trim();
+                      final quantity = int.tryParse(inputText);
+
+                      if (quantity == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Zadejte platné číslo'),
+                            backgroundColor: Colors.red,
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      } else if (quantity <= 0) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Množství musí být větší než 0'),
+                            backgroundColor: Colors.red,
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      } else {
+                        _addToCart(product, quantity);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'Koupit',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -240,7 +283,9 @@ class _ProductsScreenState extends State<ProductsScreen> {
             ),
           ],
         ),
-      ),
+          ],
+        ),
+      )
     );
   }
 }
