@@ -11,4 +11,5 @@ Mobilní aplikace pro pekárnu, umožní rychlé objednání zboží a kontrolu 
 - více konkrétní prezentace, ne tak moc obecná, ukázat obrázky(příklady) toho jak projekt vypadá
 - natočit si video finální verze projektu, kdyby se náhodou stalo, že by projekt nešel spustit(může se stát cokoliv)
 - netrávit moc času na technologiích
-- 
+
+- VYMĚNIT TECHNOLOGIE ZA KNIHOVNY
