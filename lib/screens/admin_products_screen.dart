@@ -208,13 +208,6 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
     // PlutoGrid sloupce
     final columns = <PlutoColumn>[
       PlutoColumn(
-        title: 'ID',
-        field: 'id',
-        type: PlutoColumnType.number(),
-        width: 80,
-        enableEditingMode: false,
-      ),
-      PlutoColumn(
         title: 'Název',
         field: 'nazev',
         type: PlutoColumnType.text(),
@@ -274,7 +267,6 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
     final rows = _receptury.map((receptura) {
       return PlutoRow(
         cells: {
-          'id': PlutoCell(value: receptura['id'] ?? 0),
           'nazev': PlutoCell(value: receptura['nazev'] ?? ''),
           'kategorie': PlutoCell(value: receptura['kategorie'] ?? ''),
           'suroviny': PlutoCell(value: receptura['suroviny'] ?? ''),
