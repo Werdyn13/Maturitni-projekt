@@ -178,6 +178,24 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
         type: PlutoColumnType.text(),
         width: 250,
         enableEditingMode: false,
+        renderer: (rendererContext) {
+          final order = _orders[rendererContext.rowIdx];
+          final email = order['Uzivatel']?['mail'] ?? ' ';
+
+          
+          return Tooltip(
+            message: email,
+            preferBelow: false,
+            child: Container(
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text(
+                rendererContext.cell.value?.toString() ?? '',
+                style: const TextStyle(fontSize: 14),
+              ),
+            ),
+          );
+        },
       ),
       PlutoColumn(
         title: 'Celková cena',
