@@ -14,7 +14,7 @@ Mobilní aplikace pro pekárnu, umožní rychlé objednání zboží a kontrolu 
 - VYMĚNIT TECHNOLOGIE ZA KNIHOVNY
 
 ## To-Do List k projektu
-- Vyřešit responsivitu pro mobil
+- Vyřešit responzivitu pro mobil
 - Přidat multiselect na nástěnku při vybíraní pro koho je nová zpráva.
 - Deadline úkoly, kdy skončí opakovatelný úkol(aby netvrtal nekonečně, ale třeba za půl roku skončí)
 - U objednávek ukázat, co si zákazník koupil a to i v dashboardu. Např. když kliknu na objednávku, tak mi shora sjede co bylo koupeno za produkty, a tak to udělat i u historie objednávek.
