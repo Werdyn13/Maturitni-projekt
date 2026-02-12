@@ -166,13 +166,6 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     // PlutoGrid sloupce
     final columns = <PlutoColumn>[
       PlutoColumn(
-        title: 'ID',
-        field: 'id',
-        type: PlutoColumnType.number(),
-        width: 80,
-        enableEditingMode: false,
-      ),
-      PlutoColumn(
         title: 'Datum',
         field: 'datum',
         type: PlutoColumnType.text(),
@@ -184,13 +177,6 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
         field: 'zakaznik',
         type: PlutoColumnType.text(),
         width: 250,
-        enableEditingMode: false,
-      ),
-      PlutoColumn(
-        title: 'Email',
-        field: 'email',
-        type: PlutoColumnType.text(),
-        width: 200,
         enableEditingMode: false,
       ),
       PlutoColumn(
@@ -323,10 +309,8 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
 
       return PlutoRow(
         cells: {
-          'id': PlutoCell(value: order['id'] ?? 0),
           'datum': PlutoCell(value: formattedDate),
           'zakaznik': PlutoCell(value: zakaznik),
-          'email': PlutoCell(value: email),
           'cena': PlutoCell(value: order['celkova_cena'] ?? 0),
           'stav': PlutoCell(value: order['stav'] ?? ''),
           'akce': PlutoCell(value: ''),
