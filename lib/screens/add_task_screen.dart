@@ -15,7 +15,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   
   final textUkoluController = TextEditingController();
   
-  String? selectedUser;
+  int? selectedUserId;
   String selectedRepeat = 'Žádné';
   DateTime selectedDate = DateTime.now();
   
@@ -73,7 +73,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   Future<void> _handleSubmit() async {
     setState(() {
       _textUkoluError = textUkoluController.text.isEmpty;
-      _userError = selectedUser == null;
+      _userError = selectedUserId == null;
     });
 
     if (_textUkoluError || _userError) {
@@ -82,7 +82,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
     try {
       await _nastenkaService.addTask(
-        proUzivatele: selectedUser!,
+        uzivatelId: selectedUserId!,
         textUkolu: textUkoluController.text,
         opakovat: selectedRepeat,
         naDen: selectedDate,
@@ -141,26 +141,26 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    value: selectedUser,
+                  DropdownButtonFormField<int>(
+                    value: selectedUserId,
                     decoration: InputDecoration(
                       border: const OutlineInputBorder(),
                       hintText: 'Vyberte uživatele',
                       errorText: _userError ? 'Vyberte uživatele' : null,
                     ),
                     items: _users.map((user) {
-                      final email = user['mail'] ?? '';
+                      final id = user['id'] as int;
                       final jmeno = user['jmeno'] ?? '';
                       final prijmeni = user['prijmeni'] ?? '';
                       final displayName = '$jmeno $prijmeni';
-                      return DropdownMenuItem<String>(
-                        value: email,
+                      return DropdownMenuItem<int>(
+                        value: id,
                         child: Text(displayName),
                       );
                     }).toList(),
                     onChanged: (value) {
                       setState(() {
-                        selectedUser = value;
+                        selectedUserId = value;
                         if (_userError && value != null) {
                           _userError = false;
                         }

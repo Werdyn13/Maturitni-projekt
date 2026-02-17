@@ -8,7 +8,7 @@ class NastenkaService {
     try {
       final response = await _supabase
           .from('Nastenka')
-          .select()
+          .select('*, Uzivatel(jmeno, prijmeni, mail)')
           .order('na_den');
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
@@ -18,14 +18,14 @@ class NastenkaService {
 
   // Přidat nový úkol
   Future<void> addTask({
-    required String proUzivatele,
+    required int uzivatelId,
     required String textUkolu,
     required String opakovat,
     required DateTime naDen,
   }) async {
     try {
       await _supabase.from('Nastenka').insert({
-        'pro_uzivatele': proUzivatele,
+        'pro_uzivatele': uzivatelId,
         'text_ukolu': textUkolu,
         'opakovat': opakovat,
         'na_den': naDen.toIso8601String(),

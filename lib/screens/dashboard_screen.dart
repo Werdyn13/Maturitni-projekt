@@ -468,6 +468,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     itemBuilder: (context, index) {
                       final task = _tasks[index];
                       final date = DateTime.parse(task['na_den']);
+                      
+                      // Získat jméno uživatele
+                      final user = task['Uzivatel'];
+                      final userName = user != null
+                          ? '${user['jmeno'] ?? ''} ${user['prijmeni'] ?? ''}'.trim()
+                          : 'Neznámý';
+                      
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
                         elevation: 2,
@@ -491,7 +498,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(height: 4),
-                              Text('Pro: ${task['pro_uzivatele'] ?? ''}'),
+                              Text('Pro: $userName'),
                               Text('Datum: ${date.day}.${date.month}.${date.year}'),
                               if (task['opakovat'] != null && task['opakovat'] != 'Žádné')
                                 Text('Opakovat: ${task['opakovat']}'),
