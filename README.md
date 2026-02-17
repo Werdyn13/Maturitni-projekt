@@ -32,6 +32,10 @@ Mobilní aplikace pro pekárnu, umožní rychlé objednání zboží a kontrolu 
 # Hlavní část
 - nepopisovat všechny třídy, ale ty které nám opravdu dělaly problém(složité části kódu)
 - screenshoty kódu -> můžou být, ale ne moc (a měly by být když už hodně popsané, ale něco co se nedá lehce zjistit ze zdrojáku)
+# Testování
+- popsat i zpětnou vazbu, ale aby byla správně(říct jim co cheme aby vyzkoušeli, díváme se co dělají a pak posloucháme jejich zpětnou vazbu, zda-li to dělají tak jak jsme čekali, a pokud ne tak co chceme upravit, tohle všechno tam popsat)
+- není to o tom jim to dát ať si testujou
+- úspěšné testování - našel jsem něco co chci zlepšit a zlepšil jsem to, nebo jsem se minimálně snažil
 # Zdroje
 - přidat odkazy na chaty
 # Závěr
