@@ -12,7 +12,6 @@ Mobilní aplikace pro pekárnu, umožní rychlé objednání zboží a kontrolu 
 - natočit si video finální verze projektu, kdyby se náhodou stalo, že by projekt nešel spustit(může se stát cokoliv)
 - netrávit moc času na technologiích
 - VYMĚNIT TECHNOLOGIE ZA KNIHOVNY
-- přidat odkazy na chaty
 
 ## To-Do List k projektu
 - Vyřešit responzivitu pro mobil
@@ -28,3 +27,14 @@ Mobilní aplikace pro pekárnu, umožní rychlé objednání zboží a kontrolu 
 - Zaměstnanci
 - Responzivita tabulky v dashboard
 - Admin může posílat zprávy všem na nástěnce
+
+## Dokumentace
+# Hlavní část
+- nepopisovat všechny třídy, ale ty které nám opravdu dělaly problém(složité části kódu)
+- screenshoty kódu -> můžou být, ale ne moc (a měly by být když už hodně popsané, ale něco co se nedá lehce zjistit ze zdrojáku)
+# Zdroje
+- přidat odkazy na chaty
+# Závěr
+- jaké cíle se povedly, jaké ne(např. z části)
+- alespoň půl stránky
+- nepsát moc osobní dojmy(max 1 věta)
