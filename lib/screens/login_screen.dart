@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import 'home_screen.dart';
@@ -23,11 +22,6 @@ class _LoginScreenState extends State<LoginScreen>
   bool _isLoading = false;
   bool _isRegistering = false;
 
-  // Animace pozadí
-  late final AnimationController _bgController;
-  late final Animation<Color?> _color1;
-  late final Animation<Color?> _color2;
-
   // Animace login
   late final AnimationController _entryController;
   late final Animation<double> _fadeAnim;
@@ -36,17 +30,6 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   void initState() {
     super.initState();
-
-    // Animace pozadí
-    _bgController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 8),
-    )..repeat(reverse: true);
-
-    _color1 = ColorTween(begin: Colors.black, end: const Color(0xFF424242))
-        .animate(_bgController);
-    _color2 = ColorTween(begin: const Color(0xFF616161), end: const Color(0xFF9E9E9E))
-        .animate(_bgController);
 
     // Animace pro login
     _entryController = AnimationController(
@@ -70,7 +53,6 @@ class _LoginScreenState extends State<LoginScreen>
     _confirmPasswordController.dispose();
     _jmenoController.dispose();
     _prijmeniController.dispose();
-    _bgController.dispose();
     _entryController.dispose();
     super.dispose();
   }
@@ -155,46 +137,32 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _bgController,
-      builder: (context, child) {
-        return Scaffold(
-          body: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [_color1.value!, _color2.value!],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: Center(
-              child: FadeTransition(
-                opacity: _fadeAnim,
-                child: SlideTransition(
-                  position: _slideAnim,
-                  child: _buildLoginBox(),
-                ),
-              ),
-            ),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: FadeTransition(
+          opacity: _fadeAnim,
+          child: SlideTransition(
+            position: _slideAnim,
+            child: _buildLoginBox(),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
   Widget _buildLoginBox() {
     return Container(
-      padding: const EdgeInsets.all(24),
-      width: 380,
+      padding: const EdgeInsets.all(32),
+      width: 400,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
-            blurRadius: 20,
-            offset: const Offset(0, 12),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 24,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -204,19 +172,19 @@ class _LoginScreenState extends State<LoginScreen>
           Text(
             "Bánovská pekárna",
             style: TextStyle(
-              color: Colors.white,
+              color: Colors.grey[900],
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              letterSpacing: 1,
+              letterSpacing: -0.5,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
             "Pečeme s láskou",
             style: TextStyle(
-              color: Colors.white70,
-              fontSize: 18,
-              fontStyle: FontStyle.italic,
+              color: Colors.grey[600],
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
             ),
           ),
           const SizedBox(height: 26),
@@ -258,47 +226,82 @@ class _LoginScreenState extends State<LoginScreen>
     return TextField(
       controller: controller,
       obscureText: obscure,
-      style: const TextStyle(color: Colors.white),
+      style: TextStyle(color: Colors.grey[900], fontSize: 15),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Colors.white70),
-        prefixIcon: Icon(icon, color: Colors.white),
+        labelStyle: TextStyle(color: Colors.grey[600]),
+        prefixIcon: Icon(icon, color: Colors.grey[600], size: 20),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.08),
+        fillColor: Colors.grey[50],
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[800]!, width: 2),
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
         ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
     );
   }
 
   Widget _buildLoginButton() {
-    return TextButton(
-      onPressed: _isLoading ? null : _handleLogin,
-      style: TextButton.styleFrom(
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 16),
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : _handleLogin,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.grey[900],
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 0,
+        ),
+        child: _isLoading
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
+            : const Text("Login", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
       ),
-      child: _isLoading
-          ? const CircularProgressIndicator(color: Colors.white)
-          : const Text("Login", style: TextStyle(fontSize: 17)),
     );
   }
 
   Widget _buildCreateAccountButton() {
-    return TextButton(
-      onPressed: _isLoading ? null : _handleRegister,
-      style: TextButton.styleFrom(
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 16),
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : _handleRegister,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.grey[900],
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 0,
+        ),
+        child: _isLoading
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
+            : const Text("Vytvořit účet", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
       ),
-      child: _isLoading
-          ? const CircularProgressIndicator(color: Colors.white)
-          : const Text("Vytvořit účet", style: TextStyle(fontSize: 17)),
     );
   }
 
@@ -309,7 +312,7 @@ class _LoginScreenState extends State<LoginScreen>
           : () => setState(() => _isRegistering = !_isRegistering),
       child: Text(
         _isRegistering ? "Zpátky na login" : "Registrovat se",
-        style: const TextStyle(color: Colors.white, fontSize: 16),
+        style: TextStyle(color: Colors.grey[700], fontSize: 15, fontWeight: FontWeight.w500),
       ),
     );
   }
