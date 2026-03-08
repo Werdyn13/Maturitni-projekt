@@ -114,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen>
         prijmeni: _prijmeniController.text.trim(),
       );
 
-      _showMessage('Registrace byla úspěšná! Nyní se můžete přihlásit.');
+      _showMessage('Registrace byla úspěšná! Váš účet čeká na schválení administrátorem.');
       setState(() {
         _isRegistering = false;
         _jmenoController.clear();

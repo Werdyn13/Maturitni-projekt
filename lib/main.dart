@@ -51,7 +51,11 @@ class MyApp extends StatelessWidget {
     final userEmail = session.user.email;
     if (userEmail != null) {
       final profile = await authService.getUserProfile(userEmail);
-      final isAdmin = profile?['admin'] == true;
+      if (profile == null || profile['potvrzeno'] != true) {
+        await Supabase.instance.client.auth.signOut();
+        return const LoginScreen();
+      }
+      final isAdmin = profile['admin'] == true;
       return isAdmin ? const DashboardScreen() : const HomeScreen();
     }
 

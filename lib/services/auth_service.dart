@@ -29,6 +29,7 @@ class AuthService {
           'prijmeni': prijmeni ?? '',
           'mail': email,
           'admin': false,
+          'potvrzeno': false,
         });
       }
       
@@ -48,6 +49,14 @@ class AuthService {
         email: email,
         password: password,
       );
+
+      // Zkontrolovat, zda byl účet schválen adminem
+      final profile = await getUserProfile(email);
+      if (profile == null || profile['potvrzeno'] != true) {
+        await _supabase.auth.signOut();
+        throw Exception('Váš účet čeká na schválení administrátorem.');
+      }
+
       return response;
     } catch (e) {
       rethrow;
@@ -123,6 +132,44 @@ class AuthService {
       await _supabase
           .from('Uzivatel')
           .update({'admin': newAdminStatus})
+          .eq('mail', email);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Získat čekající uživatele (potvrzeno == false)
+  Future<List<Map<String, dynamic>>> getPendingUsers() async {
+    try {
+      final response = await _supabase
+          .from('Uzivatel')
+          .select()
+          .eq('potvrzeno', false)
+          .order('mail');
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Schválit uživatele
+  Future<void> approveUser(String email) async {
+    try {
+      await _supabase
+          .from('Uzivatel')
+          .update({'potvrzeno': true})
+          .eq('mail', email);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Odmítnout / smazat čekajícího uživatele
+  Future<void> rejectUser(String email) async {
+    try {
+      await _supabase
+          .from('Uzivatel')
+          .delete()
           .eq('mail', email);
     } catch (e) {
       rethrow;
