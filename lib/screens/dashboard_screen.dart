@@ -47,8 +47,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               hoverTextStyle: const TextStyle(color: Colors.black),
               textStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
               selectedTextStyle: const TextStyle(color: Colors.white),
-              itemTextPadding: const EdgeInsets.only(left: 30),
-              selectedItemTextPadding: const EdgeInsets.only(left: 30),
+              itemTextPadding: const EdgeInsets.only(left: 20),
+              selectedItemTextPadding: const EdgeInsets.only(left: 20),
               itemDecoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: Colors.grey[900]!),
@@ -76,6 +76,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 color: Colors.white,
                 size: 20,
               ),
+              width: 60,
             ),
             extendedTheme: const SidebarXTheme(
               width: 250,
@@ -91,15 +92,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        'Administerský panel',
-                        style: TextStyle(
+                      if (extended)
+                        const Text(
+                          'Administerský panel',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        )
+                      else
+                        const Icon(
+                          Icons.admin_panel_settings,
                           color: Colors.white,
-                          fontSize: extended ? 20 : 16,
-                          fontWeight: FontWeight.bold,
+                          size: 32,
                         ),
-                        textAlign: TextAlign.center,
-                      ),
                     ],
                   ),
                 ),
@@ -186,6 +194,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SnackBar(
             content: Text('Admin status byl úspěšně změněn'),
             backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
           ),
         );
       }
@@ -195,6 +204,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           SnackBar(
             content: Text('Chyba při změně admin statusu: $e'),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2),
           ),
         );
       }
