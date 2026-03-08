@@ -14,6 +14,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
   List<Map<String, dynamic>> _receptury = [];
   bool _isLoading = false;
   bool _recepturyLoaded = false;
+  PlutoGridStateManager? stateManager;
 
   @override
   void initState() {
@@ -213,6 +214,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
         type: PlutoColumnType.text(),
         width: 200,
         enableEditingMode: false,
+        enableSorting: true,
       ),
       PlutoColumn(
         title: 'Kategorie',
@@ -220,6 +222,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
         type: PlutoColumnType.text(),
         width: 150,
         enableEditingMode: false,
+        enableSorting: true,
       ),
       PlutoColumn(
         title: 'Suroviny',
@@ -227,6 +230,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
         type: PlutoColumnType.text(),
         width: 300,
         enableEditingMode: false,
+        enableSorting: true,
       ),
       PlutoColumn(
         title: 'Množství',
@@ -234,6 +238,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
         type: PlutoColumnType.text(),
         width: 120,
         enableEditingMode: false,
+        enableSorting: true,
       ),
       PlutoColumn(
         title: 'Akce',
@@ -241,6 +246,8 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
         type: PlutoColumnType.text(),
         width: 120,
         enableEditingMode: false,
+        enableSorting: false,
+        enableFilterMenuItem: false,
         renderer: (rendererContext) {
           final receptura = _receptury[rendererContext.rowIdx];
           return Row(
@@ -250,11 +257,16 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
               IconButton(
                 icon: const Icon(Icons.edit, color: Colors.blue, size: 20),
                 tooltip: 'Upravit',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
                 onPressed: () => _showEditRecepturaDialog(receptura),
               ),
+              const SizedBox(width: 8),
               IconButton(
                 icon: const Icon(Icons.delete, color: Colors.red, size: 20),
                 tooltip: 'Smazat',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
                 onPressed: () => _deleteReceptura(receptura['id']),
               ),
             ],
@@ -329,8 +341,14 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                 columns: columns,
                 rows: rows,
                 onLoaded: (PlutoGridOnLoadedEvent event) {
+                  stateManager = event.stateManager;
+                  stateManager!.setShowColumnFilter(true);
                 },
                 configuration: PlutoGridConfiguration(
+                  columnSize: const PlutoGridColumnSizeConfig(
+                    autoSizeMode: PlutoAutoSizeMode.scale,
+                  ),
+                  columnFilter: PlutoGridColumnFilterConfig(),
                   style: PlutoGridStyleConfig(
                     gridBorderColor: Colors.grey.shade300,
                     gridBackgroundColor: Colors.white,
@@ -342,6 +360,10 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                     rowHeight: 60,
                     defaultColumnTitlePadding: const EdgeInsets.all(8),
                     defaultCellPadding: const EdgeInsets.all(8),
+                  ),
+                  scrollbar: const PlutoGridScrollbarConfig(
+                    isAlwaysShown: true,
+                    scrollbarThickness: 8,
                   ),
                 ),
               ),
