@@ -93,17 +93,13 @@ class AuthService {
     required String email,
     String? jmeno,
     String? prijmeni,
-    String? newEmail,
   }) async {
     try {
       final updateData = <String, dynamic>{};
-      
+
       if (jmeno != null) updateData['jmeno'] = jmeno;
       if (prijmeni != null) updateData['prijmeni'] = prijmeni;
-      if (newEmail != null && newEmail != email) {
-        updateData['mail'] = newEmail;
-      }
-      
+
       await _supabase
           .from('Uzivatel')
           .update(updateData)

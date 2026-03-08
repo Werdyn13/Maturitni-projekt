@@ -18,7 +18,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   
   final TextEditingController _jmenoController = TextEditingController();
   final TextEditingController _prijmeniController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
 
   @override
   void initState() {
@@ -30,7 +29,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void dispose() {
     _jmenoController.dispose();
     _prijmeniController.dispose();
-    _emailController.dispose();
     super.dispose();
   }
 
@@ -44,7 +42,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (profile != null) {
           _jmenoController.text = profile['jmeno'] ?? '';
           _prijmeniController.text = profile['prijmeni'] ?? '';
-          _emailController.text = profile['mail'] ?? '';
         }
       });
     } else {
@@ -62,7 +59,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         email: _userProfile!['mail'],
         jmeno: _jmenoController.text,
         prijmeni: _prijmeniController.text,
-        newEmail: _emailController.text,
       );
       
       await _loadUserProfile();
@@ -96,7 +92,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (_userProfile != null) {
         _jmenoController.text = _userProfile!['jmeno'] ?? '';
         _prijmeniController.text = _userProfile!['prijmeni'] ?? '';
-        _emailController.text = _userProfile!['mail'] ?? '';
       }
     });
   }
@@ -142,10 +137,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   controller: _prijmeniController,
                                 ),
                                 const SizedBox(height: 16),
-                                _buildEditField(
+                                _buildProfileCard(
                                   icon: Icons.email,
                                   title: 'Email',
-                                  controller: _emailController,
+                                  content: _userProfile!['mail'] ?? 'N/A',
                                 ),
                                 const SizedBox(height: 16),
                                 _buildProfileCard(

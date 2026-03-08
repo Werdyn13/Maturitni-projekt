@@ -34,8 +34,9 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
           SnackBar(
             content: 
             Text('Chyba při načítání: $e'),
-            backgroundColor: Colors.red),
+            backgroundColor: Colors.red,
             duration: const Duration(seconds: 2),
+          ),
         );
       }
     }
@@ -47,15 +48,19 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
       await _loadPendingUsers();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Účet $email byl schválen.'), backgroundColor: Colors.green),
+          SnackBar(content: Text('Účet $email byl schválen.'),
+          backgroundColor: Colors.green,
           duration: const Duration(seconds: 2),
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Chyba: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('Chyba: $e'),
+          backgroundColor: Colors.red,
           duration: const Duration(seconds: 2),
+          ),
         );
       }
     }
@@ -88,8 +93,10 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
       await _loadPendingUsers();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Registrace $email byla odmítnuta.'), backgroundColor: Colors.orange),
+          SnackBar(content: Text('Registrace $email byla odmítnuta.'),
+          backgroundColor: Colors.orange,
           duration: const Duration(seconds: 2),
+          ),
         );
       }
     } catch (e) {
