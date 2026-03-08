@@ -25,7 +25,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       final orders = await _ordersService.getAllOrders();
       setState(() {
@@ -36,6 +36,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
       setState(() {
         _isLoading = false;
       });
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -68,34 +69,11 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     try {
       await _ordersService.updateOrderStatus(orderId, newStatus);
       await _loadOrders();
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Stav objednávky byl změněn'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Chyba: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _acceptOrder(int orderId) async {
-    try {
-      await _ordersService.confirmOrder(orderId);
-      await _loadOrders();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Objednávka byla přijata'),
             backgroundColor: Colors.green,
           ),
         );
@@ -137,6 +115,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     try {
       await _ordersService.deleteOrder(orderId);
       await _loadOrders();
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -163,7 +142,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    // PlutoGrid sloupce
+
     final columns = <PlutoColumn>[
       PlutoColumn(
         title: 'Datum',
@@ -171,28 +150,22 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
         type: PlutoColumnType.text(),
         width: 160,
         enableEditingMode: false,
+        enableSorting: true,
       ),
       PlutoColumn(
         title: 'Zákazník',
         field: 'zakaznik',
         type: PlutoColumnType.text(),
         width: 250,
-        enableEditingMode: false,
+        enableSorting: true,
         renderer: (rendererContext) {
-          final order = _orders[rendererContext.rowIdx];
-          final email = order['Uzivatel']?['mail'] ?? ' ';
+          final email = _orders[rendererContext.rowIdx]['Uzivatel']?['mail'] ?? ' ';
 
-          
           return Tooltip(
             message: email,
-            preferBelow: false,
-            child: Container(
-              alignment: Alignment.centerLeft,
+            child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Text(
-                rendererContext.cell.value?.toString() ?? '',
-                style: const TextStyle(fontSize: 14),
-              ),
+              child: Text(rendererContext.cell.value?.toString() ?? ''),
             ),
           );
         },
@@ -202,15 +175,12 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
         field: 'cena',
         type: PlutoColumnType.number(),
         width: 120,
-        enableEditingMode: false,
+        enableSorting: true,
         renderer: (rendererContext) {
-          return Container(
+          return Align(
             alignment: Alignment.centerRight,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Text(
-              '${rendererContext.cell.value} Kč',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
+            child: Text('${rendererContext.cell.value} Kč',
+                style: const TextStyle(fontWeight: FontWeight.bold)),
           );
         },
       ),
@@ -219,7 +189,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
         field: 'stav',
         type: PlutoColumnType.text(),
         width: 130,
-        enableEditingMode: false,
+        enableSorting: true,
         renderer: (rendererContext) {
           final status = rendererContext.cell.value?.toString() ?? '';
           Color bgColor;
@@ -243,8 +213,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               bgColor = Colors.grey;
           }
 
-          return Container(
-            alignment: Alignment.center,
+          return Center(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
@@ -254,10 +223,9 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               child: Text(
                 _getStatusText(status),
                 style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12),
               ),
             ),
           );
@@ -268,36 +236,37 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
         field: 'akce',
         type: PlutoColumnType.text(),
         width: 200,
-        enableEditingMode: false,
+        enableSorting: false,
+        enableFilterMenuItem: false,
         renderer: (rendererContext) {
           final order = _orders[rendererContext.rowIdx];
           final status = order['stav'].toString();
-          
+
           return Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              DropdownButton<String>(
-                value: status,
-                isDense: true,
-                underline: Container(),
-                items: const [
-                  DropdownMenuItem(value: 'nova', child: Text('Nová', style: TextStyle(fontSize: 12))),
-                  DropdownMenuItem(value: 'potvrzena', child: Text('Potvrzená', style: TextStyle(fontSize: 12))),
-                  DropdownMenuItem(value: 'pripravena', child: Text('Připravená', style: TextStyle(fontSize: 12))),
-                  DropdownMenuItem(value: 'dokoncena', child: Text('Dokončená', style: TextStyle(fontSize: 12))),
-                  DropdownMenuItem(value: 'zrusena', child: Text('Zrušená', style: TextStyle(fontSize: 12))),
-                ],
-                onChanged: (newStatus) {
-                  if (newStatus != null && newStatus != status) {
-                    _updateOrderStatus(order['id'], newStatus);
-                  }
-                },
+              Flexible(
+                child: DropdownButton<String>(
+                  value: status,
+                  isDense: true,
+                  underline: const SizedBox(),
+                  items: const [
+                    DropdownMenuItem(value: 'nova', child: Text('Nová', style: TextStyle(fontSize: 12))),
+                    DropdownMenuItem(value: 'potvrzena', child: Text('Potvrzená', style: TextStyle(fontSize: 12))),
+                    DropdownMenuItem(value: 'pripravena', child: Text('Připravená', style: TextStyle(fontSize: 12))),
+                    DropdownMenuItem(value: 'dokoncena', child: Text('Dokončená', style: TextStyle(fontSize: 12))),
+                    DropdownMenuItem(value: 'zrusena', child: Text('Zrušená', style: TextStyle(fontSize: 12))),
+                  ],
+                  onChanged: (newStatus) {
+                    if (newStatus != null && newStatus != status) {
+                      _updateOrderStatus(order['id'], newStatus);
+                    }
+                  },
+                ),
               ),
-              const SizedBox(width: 8),
               IconButton(
                 icon: const Icon(Icons.delete, color: Colors.red, size: 20),
-                tooltip: 'Smazat',
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
                 onPressed: () => _deleteOrder(order['id']),
@@ -308,22 +277,22 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
       ),
     ];
 
-    // PlutoGrid řádky
     final rows = _orders.map((order) {
       String formattedDate = 'N/A';
+
       if (order['datum_objednavky'] != null) {
         try {
           final datum = DateTime.parse(order['datum_objednavky']);
-          formattedDate = '${datum.day}.${datum.month}.${datum.year} ${datum.hour}:${datum.minute.toString().padLeft(2, '0')}';
-        } catch (e) {
+          formattedDate =
+              '${datum.day}.${datum.month}.${datum.year} ${datum.hour}:${datum.minute.toString().padLeft(2, '0')}';
+        } catch (_) {
           formattedDate = order['datum_objednavky'].toString();
         }
       }
-      
+
       final zakaznik = order['Uzivatel'] != null
           ? '${order['Uzivatel']['jmeno'] ?? ''} ${order['Uzivatel']['prijmeni'] ?? ''}'
           : 'N/A';
-      final email = order['Uzivatel'] != null ? (order['Uzivatel']['mail'] ?? 'N/A') : 'N/A';
 
       return PlutoRow(
         cells: {
@@ -337,33 +306,18 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     }).toList();
 
     return Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Objednávky',
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Celkem objednávek: ${_orders.length}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
+              const Text(
+                'Objednávky',
+                style: TextStyle(
+                    fontSize: 28, fontWeight: FontWeight.bold),
               ),
               ElevatedButton.icon(
                 onPressed: _loadOrders,
@@ -372,59 +326,40 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 ),
               ),
             ],
           ),
+
           const SizedBox(height: 24),
+
+          
           Expanded(
-            child: _orders.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.shopping_cart_outlined,
-                          size: 80,
-                          color: Colors.grey[400],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Žádné objednávky',
-                          style: TextStyle(
-                            fontSize: 20,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : Card(
-                    elevation: 2,
-                    child: PlutoGrid(
-                      key: ValueKey(_orders.length),
-                      columns: columns,
-                      rows: rows,
-                      onLoaded: (PlutoGridOnLoadedEvent event) {
-                        stateManager = event.stateManager;
-                      },
-                      configuration: PlutoGridConfiguration(
-                        style: PlutoGridStyleConfig(
-                          gridBorderColor: Colors.grey[300]!,
-                          gridBorderRadius: BorderRadius.circular(8),
-                          rowHeight: 50,
-                          columnHeight: 50,
-                          cellTextStyle: const TextStyle(fontSize: 14),
-                          columnTextStyle: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          defaultCellPadding: const EdgeInsets.all(8),
-                        ),
-                      ),
-                    ),
+            child: Card(
+              child: PlutoGrid(
+                columns: columns,
+                rows: rows,
+                onLoaded: (event) {
+                  stateManager = event.stateManager;
+                  stateManager!.setShowColumnFilter(true);
+                },
+                configuration: PlutoGridConfiguration(
+                  columnSize: const PlutoGridColumnSizeConfig(
+                    autoSizeMode: PlutoAutoSizeMode.scale,
                   ),
+                  columnFilter: PlutoGridColumnFilterConfig(),
+                  style: PlutoGridStyleConfig(
+                    gridBorderRadius: BorderRadius.circular(8),
+                    rowHeight: 50,
+                    columnHeight: 50,
+                  ),
+                  scrollbar: const PlutoGridScrollbarConfig(
+                    isAlwaysShown: true,
+                    scrollbarThickness: 8,
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
