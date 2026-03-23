@@ -171,4 +171,11 @@ class AuthService {
       rethrow;
     }
   }
+
+  Future<void> toggleEmployeeStatus(String email, bool newStatus) async {
+  await _supabase
+      .from('Uzivatel')
+      .update({'zamestnanec': newStatus})
+      .eq('mail', email);
+}
 }

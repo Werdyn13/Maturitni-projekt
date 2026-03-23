@@ -212,6 +212,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  Future<void> _toggleEmployeeStatus(String email, bool currentStatus) async {
+    try {
+      await _authService.toggleEmployeeStatus(email, !currentStatus);
+      await _loadUsers();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Status zaměstnance byl úspěšně změněn'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Chyba při změně statusu zaměstnance: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
 
 
   Widget _buildAccountsTab() {
@@ -308,9 +334,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
+                    DataColumn(
+                      label: Text(
+                        'Zaměstnanec',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    DataColumn(
+                      label: Text(
+                        'Nastavení zaměstnance',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ],
                   rows: _users.map((user) {
                     final isAdmin = user['admin'] == true;
+                    final isEmployee = user['zamestnanec'] == true;
                     final email = user['mail'] ?? '';
                     return DataRow(
                       cells: [
@@ -336,6 +375,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             activeThumbColor: Colors.green,
                             onChanged: (value) {
                               _toggleAdminStatus(email, isAdmin);
+                            },
+                          ),
+                        ),
+                        DataCell(
+                          Row(
+                            children: [
+                              Icon(
+                                isEmployee ? Icons.check_circle : Icons.cancel,
+                                color: isEmployee ? Colors.green : Colors.red,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(isEmployee ? 'Ano' : 'Ne'),
+                            ],
+                          ),
+                        ),
+                        DataCell(
+                          Switch(
+                            value: isEmployee,
+                            activeThumbColor: Colors.green,
+                            onChanged: (value) {
+                              _toggleEmployeeStatus(email, isEmployee);
                             },
                           ),
                         ),
