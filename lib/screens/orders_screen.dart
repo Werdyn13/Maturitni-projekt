@@ -13,6 +13,7 @@ class OrdersScreen extends StatefulWidget {
 class _OrdersScreenState extends State<OrdersScreen> {
   final OrdersService _ordersService = OrdersService();
   Map<String, dynamic>? _currentCart;
+  List<Map<String, dynamic>> _draftOrders = [];
   bool _isLoading = true;
 
   @override
@@ -24,8 +25,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
   Future<void> _loadCurrentOrder() async {
     try {
       final cart = await _ordersService.getCurrentCart();
+      final drafts = await _ordersService.getDraftOrders();
       setState(() {
         _currentCart = cart;
+        _draftOrders = drafts;
         _isLoading = false;
       });
     } catch (e) {
@@ -46,26 +49,70 @@ class _OrdersScreenState extends State<OrdersScreen> {
       return;
     }
 
+    // Zobrazit dialog pro výběr opakování
+    String? pickedOpakovat;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Opakování objednávky'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Chcete tuto objednávku automaticky opakovat?'),
+              const SizedBox(height: 12),
+              for (final opt in ['Žádné', 'Týdně', 'Měsíčně'])
+                RadioListTile<String>(
+                  title: Text(opt),
+                  value: opt,
+                  groupValue: pickedOpakovat ?? 'Žádné',
+                  onChanged: (v) => setDialogState(() => pickedOpakovat = v),
+                  dense: true,
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Zrušit'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Potvrdit objednávku'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed != true) return;
+
     try {
       final orderId = _currentCart!['order']['id'];
-      await _ordersService.updateOrderStatus(orderId, 'potvrzena');
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Objednávka byla úspěšně dokončena!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      final opakovat = (pickedOpakovat == null || pickedOpakovat == 'Žádné')
+          ? null
+          : pickedOpakovat;
+      await _ordersService.confirmOrderWithRepeat(orderId, opakovat);
 
-      // Reload a vytvoření nové prázdné objednávky
-      await _loadCurrentOrder();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Objednávka byla úspěšně odeslána!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        await _loadCurrentOrder();
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Chyba při dokončování objednávky: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Chyba při odesilání objednávky: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -103,6 +150,60 @@ class _OrdersScreenState extends State<OrdersScreen> {
           backgroundColor: Colors.red,
         ),
       );
+    }
+  }
+
+  Future<void> _confirmDraft(int orderId) async {
+    try {
+      await _ordersService.confirmDraftOrder(orderId);
+      await _loadCurrentOrder();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Objednávka potvrzena'), backgroundColor: Colors.green),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Chyba: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<void> _editDraft(int orderId) async {
+    try {
+      await _ordersService.editDraftOrder(orderId);
+      await _loadCurrentOrder();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Objednávka přesunuta do košíku'), backgroundColor: Colors.blue),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Chyba: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<void> _cancelDraft(int orderId) async {
+    try {
+      await _ordersService.cancelDraftOrder(orderId);
+      await _loadCurrentOrder();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Navrhovaná objednávka zrušena'), backgroundColor: Colors.orange),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Chyba: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -174,6 +275,19 @@ class _OrdersScreenState extends State<OrdersScreen> {
                               ],
                             ),
                             const SizedBox(height: 40),
+                            if (_draftOrders.isNotEmpty) ...[  
+                              const Text(
+                                'Navrhované objednávky',
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              ..._draftOrders.map((d) => _buildDraftCard(d)),
+                              const Divider(height: 48, thickness: 1),
+                            ],
                             if (items.isEmpty)
                               Card(
                                 elevation: 2,
@@ -380,6 +494,93 @@ class _OrdersScreenState extends State<OrdersScreen> {
               constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
               color: Colors.grey[400],
               tooltip: 'Odebrat',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDraftCard(Map<String, dynamic> draft) {
+    final order = draft['order'] as Map<String, dynamic>;
+    final items = draft['items'] as List<Map<String, dynamic>>;
+    final orderId = order['id'] as int;
+    final opakovat = order['opakovat'] as String?;
+    final totalPrice = order['celkova_cena'] ?? 0;
+
+    return Card(
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.orange.shade300, width: 1.5),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.replay, size: 16, color: Colors.orange),
+                const SizedBox(width: 6),
+                Text(
+                  opakovat != null ? 'Opakovaná objednávka ($opakovat)' : 'Navrhovaná objednávka',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                const Spacer(),
+                Text(
+                  '$totalPrice Kč',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ...items.map((item) {
+              final receptura = item['Receptury'] as Map<String, dynamic>? ?? {};
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 2),
+                child: Text(
+                  '• ${receptura['nazev'] ?? 'Produkt'} × ${item['mnozstvi']}',
+                  style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                ),
+              );
+            }),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _cancelDraft(orderId),
+                    icon: const Icon(Icons.close, size: 16),
+                    label: const Text('Zrušit'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.red,
+                      side: const BorderSide(color: Colors.red),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _editDraft(orderId),
+                    icon: const Icon(Icons.edit, size: 16),
+                    label: const Text('Upravit'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _confirmDraft(orderId),
+                    icon: const Icon(Icons.check, size: 16),
+                    label: const Text('Potvrdit'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

@@ -52,6 +52,8 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     switch (status) {
       case 'nova':
         return 'Nová';
+      case 'navrh':
+        return 'Návrh';
       case 'potvrzena':
         return 'Potvrzená';
       case 'pripravena':
@@ -68,6 +70,20 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   Future<void> _updateOrderStatus(int orderId, String newStatus) async {
     try {
       await _ordersService.updateOrderStatus(orderId, newStatus);
+
+      if (newStatus == 'dokoncena') {
+        final order = _orders.firstWhere(
+          (o) => o['id'] == orderId,
+          orElse: () => {},
+        );
+
+        // Vytvořit návrh příští objednávky, pokud je nastaveno opakování
+        final opakovat = order['opakovat'] as String?;
+        if (opakovat != null) {
+          await _ordersService.repeatOrder(orderId);
+        }
+      }
+
       await _loadOrders();
 
       if (mounted) {
@@ -291,6 +307,9 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
             case 'nova':
               bgColor = Colors.blue;
               break;
+            case 'navrh':
+              bgColor = Colors.teal;
+              break;
             case 'potvrzena':
               bgColor = Colors.orange;
               break;
@@ -326,6 +345,29 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
         },
       ),
       PlutoColumn(
+        title: 'Opakování',
+        field: 'opakovat',
+        type: PlutoColumnType.text(),
+        width: 110,
+        enableSorting: false,
+        enableFilterMenuItem: false,
+        renderer: (rendererContext) {
+          final val = rendererContext.cell.value?.toString() ?? '';
+          if (val.isEmpty) return const SizedBox();
+          return Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.teal.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.teal.shade200),
+              ),
+              child: Text(val, style: TextStyle(fontSize: 11, color: Colors.teal.shade800)),
+            ),
+          );
+        },
+      ),
+      PlutoColumn(
         title: 'Akce',
         field: 'akce',
         type: PlutoColumnType.text(),
@@ -347,6 +389,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                   underline: const SizedBox(),
                   items: const [
                     DropdownMenuItem(value: 'nova', child: Text('Nová', style: TextStyle(fontSize: 12))),
+                    DropdownMenuItem(value: 'navrh', child: Text('Návrh', style: TextStyle(fontSize: 12))),
                     DropdownMenuItem(value: 'potvrzena', child: Text('Potvrzená', style: TextStyle(fontSize: 12))),
                     DropdownMenuItem(value: 'pripravena', child: Text('Připravená', style: TextStyle(fontSize: 12))),
                     DropdownMenuItem(value: 'dokoncena', child: Text('Dokončená', style: TextStyle(fontSize: 12))),
@@ -401,6 +444,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
           'zakaznik': PlutoCell(value: zakaznik),
           'cena': PlutoCell(value: order['celkova_cena'] ?? 0),
           'stav': PlutoCell(value: order['stav'] ?? ''),
+          'opakovat': PlutoCell(value: order['opakovat'] ?? ''),
           'akce': PlutoCell(value: ''),
         },
       );

@@ -115,12 +115,13 @@ class OrdersService {
 
     final userId = userResponse['id'];
 
-    // Získat všechny objednávky uživatele kromě 'nova'
+    // Získat všechny objednávky uživatele kromě 'nova' a 'navrh'
     final orders = await _supabase
         .from('Objednavky')
         .select()
         .eq('uzivatel_id', userId)
         .neq('stav', 'nova')
+        .neq('stav', 'navrh')
         .order('datum_objednavky', ascending: false);
 
     return List<Map<String, dynamic>>.from(orders);
@@ -210,5 +211,123 @@ class OrdersService {
         .order('datum_objednavky', ascending: false);
 
     return List<Map<String, dynamic>>.from(orders);
+  }
+
+  // Potvrdit objednávku s nastavením opakování
+  Future<void> confirmOrderWithRepeat(int orderId, String? opakovat) async {
+    await _supabase
+        .from('Objednavky')
+        .update({'stav': 'potvrzena', 'opakovat': opakovat})
+        .eq('id', orderId);
+  }
+
+  // Získat navrhované objednávky pro aktuálního uživatele
+  Future<List<Map<String, dynamic>>> getDraftOrders() async {
+    final userEmail = _supabase.auth.currentUser!.email!;
+    final userResponse = await _supabase
+        .from('Uzivatel')
+        .select('id')
+        .eq('mail', userEmail)
+        .single();
+    final userId = userResponse['id'];
+
+    final orders = await _supabase
+        .from('Objednavky')
+        .select()
+        .eq('uzivatel_id', userId)
+        .eq('stav', 'navrh')
+        .order('datum_objednavky', ascending: false);
+
+    final result = <Map<String, dynamic>>[];
+    for (final order in orders) {
+      final items = await getOrderItems(order['id']);
+      result.add({'order': order, 'items': items});
+    }
+    return result;
+  }
+
+  // Vytvořit opakující se kopii objednávky jako návrh
+  Future<void> repeatOrder(int orderId) async {
+    final original = await _supabase
+        .from('Objednavky')
+        .select()
+        .eq('id', orderId)
+        .single();
+
+    final newOrder = await _supabase
+        .from('Objednavky')
+        .insert({
+          'uzivatel_id': original['uzivatel_id'],
+          'datum_objednavky': DateTime.now().toIso8601String(),
+          'stav': 'navrh',
+          'celkova_cena': original['celkova_cena'],
+          'opakovat': original['opakovat'],
+        })
+        .select()
+        .single();
+
+    final items = await _supabase
+        .from('ObjednavkaZbozi')
+        .select()
+        .eq('objednavka_id', orderId);
+
+    for (final item in items) {
+      await _supabase.from('ObjednavkaZbozi').insert({
+        'objednavka_id': newOrder['id'],
+        'zbozi_id': item['zbozi_id'],
+        'mnozstvi': item['mnozstvi'],
+      });
+    }
+  }
+
+  // Přímo potvrdit navrhovanou objednávku (navrh -> potvrzena)
+  Future<void> confirmDraftOrder(int orderId) async {
+    await _supabase
+        .from('Objednavky')
+        .update({'stav': 'potvrzena'})
+        .eq('id', orderId);
+  }
+
+  // Přesunout návrh do košíku (sloučit s aktivní nova objednávkou)
+  Future<void> editDraftOrder(int orderId) async {
+    final activeCart = await getCurrentOrder();
+    final activeId = activeCart['id'] as int;
+
+    final draftItems = await _supabase
+        .from('ObjednavkaZbozi')
+        .select()
+        .eq('objednavka_id', orderId);
+
+    for (final item in draftItems) {
+      final zboziId = item['zbozi_id'] as int;
+      final mnozstvi = item['mnozstvi'] as int;
+
+      final existing = await _supabase
+          .from('ObjednavkaZbozi')
+          .select()
+          .eq('objednavka_id', activeId)
+          .eq('zbozi_id', zboziId);
+
+      if (existing.isNotEmpty) {
+        await _supabase
+            .from('ObjednavkaZbozi')
+            .update({'mnozstvi': (existing.first['mnozstvi'] as int) + mnozstvi})
+            .eq('id', existing.first['id']);
+      } else {
+        await _supabase.from('ObjednavkaZbozi').insert({
+          'objednavka_id': activeId,
+          'zbozi_id': zboziId,
+          'mnozstvi': mnozstvi,
+        });
+      }
+    }
+
+    await deleteOrder(orderId);
+    await updateOrderTotalPrice(activeId);
+  }
+
+  // Zrušit navrhovanou objednávku
+  Future<void> cancelDraftOrder(int orderId) async {
+    await deleteOrder(orderId);
   }
 }
