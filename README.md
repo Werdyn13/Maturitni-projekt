@@ -15,18 +15,18 @@ Mobilní aplikace pro pekárnu, umožní rychlé objednání zboží a kontrolu 
 
 ## To-Do List k projektu
 - Vyřešit responzivitu pro mobil
-- Přidat multiselect na nástěnku při vybíraní pro koho je nová zpráva.
-- Deadline úkoly, kdy skončí opakovatelný úkol(aby netvrtal nekonečně, ale třeba za půl roku skončí)
-- U objednávek ukázat, co si zákazník koupil a to i v dashboardu. Např. když kliknu na objednávku, tak mi shora sjede co bylo koupeno za produkty, a tak to udělat i u historie objednávek.
+- ~~Přidat multiselect na nástěnku při vybíraní pro koho je nová zpráva.~~
+- ~~Deadline úkoly, kdy skončí opakovatelný úkol(aby netvrtal nekonečně, ale třeba za půl roku skončí)~~
+- ~~U objednávek ukázat, co si zákazník koupil a to i v dashboardu. Např. když kliknu na objednávku, tak mi shora sjede co bylo koupeno za produkty, a tak to udělat i u historie objednávek.~~
 - Admin může posunout deadline objednávek podle směn -> až budou hotoví zaměstnanci
-- Přidat šipečky pro přidání množství v objednávkách => když zákazník potvrzuje objednávku, tak aby tam mohl změnit množství produktů v té objednávce
+- ~~Přidat šipečky pro přidání množství v objednávkách => když zákazník potvrzuje objednávku, tak aby tam mohl změnit množství produktů v té objednávce~~
 - Kalendář na zobrazování objednávek na daný den => v historii objednávek bude kalendář, den kdy bylo něco objednáno bude označený a když na něj kliknu, zobrazí se mi všechny objednávky provedené v ten den
 
 ## Chybí v projektu (nutno dodělat, použít k tomu zadání)
-- Opakované objednávky
+- ~~Opakované objednávky~~
 - Zaměstnanci
 - ~~Responzivita tabulky v dashboard~~
-- Admin může posílat zprávy všem na nástěnce
+- ~~Admin může posílat zprávy všem na nástěnce~~
 
 ## Dokumentace
 # Hlavní část
@@ -42,3 +42,9 @@ Mobilní aplikace pro pekárnu, umožní rychlé objednání zboží a kontrolu 
 - jaké cíle se povedly, jaké ne(např. z části)
 - alespoň půl stránky
 - nepsát moc osobní dojmy(max 1 věta)
+# DOPSAT
+- popsat celou nástěnku i service
+- zaměstnance
+- přidat objednávky (kalendář v historii a šipečky na přidání množství v košíku)
+- přidat routování zaměstnanců
+- popsat všechny stavy, proč jsem přidal 2 navíc
