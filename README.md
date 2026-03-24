@@ -44,7 +44,10 @@ Mobilní aplikace pro pekárnu, umožní rychlé objednání zboží a kontrolu 
 - nepsát moc osobní dojmy(max 1 věta)
 # DOPSAT
 - popsat celou nástěnku i service
-- zaměstnance
+- zaměstnance, změna v auth_service
 - přidat objednávky (kalendář v historii a šipečky na přidání množství v košíku)
 - přidat routování zaměstnanců
 - popsat všechny stavy, proč jsem přidal 2 navíc
+- popsat směny a smeny_service
+- popsat změny v supabase
+- změnit a zkontrolovat obrázky
