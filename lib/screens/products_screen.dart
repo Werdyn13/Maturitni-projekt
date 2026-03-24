@@ -129,12 +129,12 @@ class _ProductsScreenState extends State<ProductsScreen> {
                             maxWidth: 1200,
                           ),
                           child: GridView.builder(
-                            padding: const EdgeInsets.all(24),
+                            padding: const EdgeInsets.all(16),
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              crossAxisSpacing: 20,
-                              mainAxisSpacing: 20,
-                              childAspectRatio: 0.8,
+                              crossAxisCount: 5,
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 10,
+                              childAspectRatio: 1.1,
                             ),
                             itemCount: _products.length,
                             itemBuilder: (context, index) {
@@ -163,112 +163,81 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
   // Karta produktu
   Widget _buildProductCard(Map<String, dynamic> product) {
-    final TextEditingController quantityController = TextEditingController(text: '1');
+    final TextEditingController quantityController =
+        TextEditingController(text: '1');
 
     return Card(
-      elevation: 4,
+      elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade200),
       ),
-      child: Container(
-        padding: const EdgeInsets.all(20),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Ikona produktu
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                widget.icon,
-                size: 48,
-                color: Colors.black,
-              ),
-            ),
-
-            // Název produktu
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Text(
-                product['nazev'] ?? 'Bez názvu',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.brown[800],
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-
-            // Cena
-            Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.end,
+           
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(widget.icon, size: 28, color: Colors.black87),
+                ),
+                const Spacer(),
                 Text(
-                  '${product['cena'] ?? '--'}',
+                  '${product['cena'] ?? '--'} Kč',
                   style: const TextStyle(
-                    fontSize: 22,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: Colors.green,
                   ),
                 ),
-                const SizedBox(width: 4),
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 2),
-                  child: Text(
-                    'Kč',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.black54,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
               ],
             ),
-          ),
-
-            // Množství
-            if (product['mnozstvi'] != null)
-              Text(
-                'Množství: ${product['mnozstvi']} ks',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.brown[600],
-                ),
+            const SizedBox(height: 10),
+            // Name
+            Text(
+              product['nazev'] ?? 'Bez názvu',
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
               ),
-
-            const SizedBox(height: 12),
-
-            // Input pro množství a tlačítko Koupit
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (product['mnozstvi'] != null) ...[
+              const SizedBox(height: 2),
+              Text(
+                '${product['mnozstvi']} ks',
+                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+              ),
+            ],
+            const Spacer(),
+            
             Row(
               children: [
                 SizedBox(
-                  width: 60,
+                  width: 48,
                   child: TextField(
                     controller: quantityController,
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 13),
                     decoration: InputDecoration(
                       hintText: '1',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                       isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 6, horizontal: 4),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(6),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
                     ),
                   ),
                 ),
@@ -276,21 +245,12 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      final inputText = quantityController.text.trim();
-                      final quantity = int.tryParse(inputText);
-
-                      if (quantity == null) {
+                      final quantity =
+                          int.tryParse(quantityController.text.trim());
+                      if (quantity == null || quantity <= 0) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Zadejte platné číslo'),
-                            backgroundColor: Colors.red,
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      } else if (quantity <= 0) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Množství musí být větší než 0'),
+                            content: Text('Zadejte platné množství'),
                             backgroundColor: Colors.red,
                             duration: Duration(seconds: 2),
                           ),
@@ -302,25 +262,24 @@ class _ProductsScreenState extends State<ProductsScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(6),
                       ),
+                      elevation: 0,
                     ),
                     child: const Text(
                       'Koupit',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                      style: TextStyle(
+                          fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ],
         ),
-          ],
-        ),
-      )
+      ),
     );
   }
 }

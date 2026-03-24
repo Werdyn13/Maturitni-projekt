@@ -300,10 +300,14 @@ class _OrdersScreenState extends State<OrdersScreen> {
     final itemId = item['id'] as int;
 
     return Card(
-      elevation: 2,
-      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         child: Row(
           children: [
             Expanded(
@@ -313,64 +317,69 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   Text(
                     nazev,
                     style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
-                    'Cena za kus: $cena Kč',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[700],
-                    ),
+                    '$cena Kč / ks',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                   ),
                 ],
               ),
             ),
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () =>
-                      _updateQuantity(itemId, orderId, mnozstvi, -1),
-                  icon: const Icon(Icons.remove_circle_outline),
-                  color: Colors.black,
+            
+            IconButton(
+              onPressed: () => _updateQuantity(itemId, orderId, mnozstvi, -1),
+              icon: const Icon(Icons.remove, size: 16),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.grey.shade100,
+                shape: const CircleBorder(),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Text(
+                '$mnozstvi',
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
                 ),
-                SizedBox(
-                  width: 36,
-                  child: Text(
-                    '$mnozstvi',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+              ),
+            ),
+            IconButton(
+              onPressed: () => _updateQuantity(itemId, orderId, mnozstvi, 1),
+              icon: const Icon(Icons.add, size: 16),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.grey.shade100,
+                shape: const CircleBorder(),
+              ),
+            ),
+            const SizedBox(width: 16),
+            SizedBox(
+              width: 72,
+              child: Text(
+                '$celkovaCena Kč',
+                textAlign: TextAlign.right,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
                 ),
-                IconButton(
-                  onPressed: () =>
-                      _updateQuantity(itemId, orderId, mnozstvi, 1),
-                  icon: const Icon(Icons.add_circle_outline),
-                  color: Colors.black,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '$celkovaCena Kč',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                IconButton(
-                  onPressed: () => _removeItem(itemId, orderId),
-                  icon: const Icon(Icons.delete_outline),
-                  color: Colors.red,
-                  tooltip: 'Odebrat položku',
-                ),
-              ],
+              ),
+            ),
+            const SizedBox(width: 4),
+            IconButton(
+              onPressed: () => _removeItem(itemId, orderId),
+              icon: const Icon(Icons.close, size: 16),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+              color: Colors.grey[400],
+              tooltip: 'Odebrat',
             ),
           ],
         ),
