@@ -69,6 +69,22 @@ class _OrdersScreenState extends State<OrdersScreen> {
     }
   }
 
+  Future<void> _updateQuantity(int itemId, int orderId, int currentQty, int delta) async {
+    try {
+      await _ordersService.updateItemQuantity(itemId, orderId, currentQty + delta);
+      await _loadCurrentOrder();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Chyba při změně množství: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _removeItem(int itemId, int orderId) async {
     try {
       await _ordersService.removeItemFromOrder(itemId, orderId);
@@ -279,8 +295,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
     final receptura = item['Receptury'] as Map<String, dynamic>;
     final nazev = receptura['nazev'] ?? 'Neznámý produkt';
     final cena = receptura['cena'] ?? 0;
-    final mnozstvi = item['mnozstvi'] ?? 0;
+    final mnozstvi = item['mnozstvi'] as int? ?? 0;
     final celkovaCena = cena * mnozstvi;
+    final itemId = item['id'] as int;
 
     return Card(
       elevation: 2,
@@ -301,14 +318,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       color: Colors.black,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Množství: $mnozstvi ks',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[700],
-                    ),
-                  ),
                   const SizedBox(height: 4),
                   Text(
                     'Cena za kus: $cena Kč',
@@ -320,21 +329,44 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 ],
               ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+            Row(
               children: [
+                IconButton(
+                  onPressed: () =>
+                      _updateQuantity(itemId, orderId, mnozstvi, -1),
+                  icon: const Icon(Icons.remove_circle_outline),
+                  color: Colors.black,
+                ),
+                SizedBox(
+                  width: 36,
+                  child: Text(
+                    '$mnozstvi',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () =>
+                      _updateQuantity(itemId, orderId, mnozstvi, 1),
+                  icon: const Icon(Icons.add_circle_outline),
+                  color: Colors.black,
+                ),
+                const SizedBox(width: 8),
                 Text(
                   '$celkovaCena Kč',
                   style: const TextStyle(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(width: 4),
                 IconButton(
-                  onPressed: () => _removeItem(item['id'], orderId),
-                  icon: const Icon(Icons.delete),
+                  onPressed: () => _removeItem(itemId, orderId),
+                  icon: const Icon(Icons.delete_outline),
                   color: Colors.red,
                   tooltip: 'Odebrat položku',
                 ),

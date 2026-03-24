@@ -16,21 +16,30 @@ class NastenkaService {
     }
   }
 
-  // Přidat nový úkol
+  // Přidat nový úkol (pro více uživatelů najednou)
   Future<void> addTask({
-    required int uzivatelId,
+    required List<int> uzivatelIds,
     required String textUkolu,
     required String opakovat,
     required DateTime naDen,
   }) async {
     try {
-      await _supabase.from('Nastenka').insert({
-        'pro_uzivatele': uzivatelId,
-        'text_ukolu': textUkolu,
-        'opakovat': opakovat,
-        'na_den': naDen.toIso8601String(),
-        'splneno': false,
-      });
+      // Opakující se úkoly mají platnost 6 měsíců
+      final String? platnostDo = opakovat != 'Žádné'
+          ? DateTime(naDen.year, naDen.month + 6, naDen.day).toIso8601String()
+          : null;
+
+      final rows = uzivatelIds
+          .map((id) => {
+                'pro_uzivatele': id,
+                'text_ukolu': textUkolu,
+                'opakovat': opakovat,
+                'na_den': naDen.toIso8601String(),
+                'splneno': false,
+                if (platnostDo != null) 'platnost_do': platnostDo,
+              })
+          .toList();
+      await _supabase.from('Nastenka').insert(rows);
     } catch (e) {
       rethrow;
     }
@@ -48,13 +57,68 @@ class NastenkaService {
     }
   }
 
-  // Označit úkol jako splněný a smazat
-  Future<void> completeTask(int id) async {
+  // Označit úkol jako splněný.
+  // Pokud se opakuje, posune na_den na podle hodnoty opakování.
+  // Pokud příští datum přesáhne platnost_do, nebo se neopakuje, smaže ho.
+  Future<void> completeTask(int id,
+      {String? opakovat, DateTime? naDen, DateTime? platnostDo}) async {
     try {
-      await _supabase
+      DateTime? nextDate;
+      if (naDen != null) {
+        switch (opakovat) {
+          case 'denně':
+            nextDate = naDen.add(const Duration(days: 1));
+            break;
+          case 'týdně':
+            nextDate = naDen.add(const Duration(days: 7));
+            break;
+          case 'měsíčně':
+            nextDate = DateTime(naDen.year, naDen.month + 1, naDen.day);
+            break;
+          default:
+            nextDate = null;
+        }
+      }
+
+      // Smazat pokud: jednorázový, nebo příští datum přesahuje platnost
+      final expired =
+          nextDate != null && platnostDo != null && nextDate.isAfter(platnostDo);
+
+      if (nextDate != null && !expired) {
+        await _supabase.from('Nastenka').update({
+          'na_den': nextDate.toIso8601String(),
+          'splneno': false,
+        }).eq('id', id);
+      } else {
+        await _supabase.from('Nastenka').delete().eq('id', id);
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Získat úkoly pro přihlášeného uživatele
+  Future<List<Map<String, dynamic>>> getTasksForCurrentUser() async {
+    try {
+      final email = _supabase.auth.currentUser?.email;
+      if (email == null) return [];
+
+      final userResponse = await _supabase
+          .from('Uzivatel')
+          .select('id')
+          .eq('mail', email)
+          .maybeSingle();
+
+      if (userResponse == null) return [];
+
+      final userId = userResponse['id'] as int;
+
+      final response = await _supabase
           .from('Nastenka')
-          .delete()
-          .eq('id', id);
+          .select('*')
+          .eq('pro_uzivatele', userId)
+          .order('na_den');
+      return List<Map<String, dynamic>>.from(response);
     } catch (e) {
       rethrow;
     }

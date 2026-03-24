@@ -122,6 +122,20 @@ class AuthService {
     }
   }
 
+  // Získat pouze zaměstnance
+  Future<List<Map<String, dynamic>>> getEmployees() async {
+    try {
+      final response = await _supabase
+          .from('Uzivatel')
+          .select()
+          .eq('zamestnanec', true)
+          .order('prijmeni');
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   // Změnit admin status uživatele
   Future<void> toggleAdminStatus(String email, bool newAdminStatus) async {
     try {

@@ -14,11 +14,11 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   final AuthService _authService = AuthService();
   
   final textUkoluController = TextEditingController();
-  
-  int? selectedUserId;
+
+  final Set<int> selectedUserIds = {};
   String selectedRepeat = 'Žádné';
   DateTime selectedDate = DateTime.now();
-  
+
   List<Map<String, dynamic>> _users = [];
   bool _isLoading = true;
   bool _textUkoluError = false;
@@ -38,7 +38,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
   Future<void> _loadUsers() async {
     try {
-      final users = await _authService.getAllUsers();
+      final users = await _authService.getEmployees();
       setState(() {
         _users = users;
         _isLoading = false;
@@ -73,7 +73,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   Future<void> _handleSubmit() async {
     setState(() {
       _textUkoluError = textUkoluController.text.isEmpty;
-      _userError = selectedUserId == null;
+      _userError = selectedUserIds.isEmpty;
     });
 
     if (_textUkoluError || _userError) {
@@ -82,7 +82,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
     try {
       await _nastenkaService.addTask(
-        uzivatelId: selectedUserId!,
+        uzivatelIds: selectedUserIds.toList(),
         textUkolu: textUkoluController.text,
         opakovat: selectedRepeat,
         naDen: selectedDate,
@@ -133,40 +133,75 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   ),
                   const SizedBox(height: 32),
                   
-                  const Text(
-                    'Pro uživatele *',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  Row(
+                    children: [
+                      const Text(
+                        'Pro zaměstnance *',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      if (selectedUserIds.isNotEmpty) ...[                        
+                        const SizedBox(width: 8),
+                        Text(
+                          '(${selectedUserIds.length} vybráno)',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 8),
-                  DropdownButtonFormField<int>(
-                    value: selectedUserId,
-                    decoration: InputDecoration(
-                      border: const OutlineInputBorder(),
-                      hintText: 'Vyberte uživatele',
-                      errorText: _userError ? 'Vyberte uživatele' : null,
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: _userError ? Colors.red : Colors.grey,
+                      ),
+                      borderRadius: BorderRadius.circular(4),
                     ),
-                    items: _users.map((user) {
-                      final id = user['id'] as int;
-                      final jmeno = user['jmeno'] ?? '';
-                      final prijmeni = user['prijmeni'] ?? '';
-                      final displayName = '$jmeno $prijmeni';
-                      return DropdownMenuItem<int>(
-                        value: id,
-                        child: Text(displayName),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedUserId = value;
-                        if (_userError && value != null) {
-                          _userError = false;
-                        }
-                      });
-                    },
+                    child: _users.isEmpty
+                        ? const Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Text('Žádní zaměstnanci nenalezeni'),
+                          )
+                        : Column(
+                            children: _users.map((user) {
+                              final id = user['id'] as int;
+                              final jmeno = user['jmeno'] ?? '';
+                              final prijmeni = user['prijmeni'] ?? '';
+                              final isSelected = selectedUserIds.contains(id);
+                              return CheckboxListTile(
+                                dense: true,
+                                title: Text('$jmeno $prijmeni'),
+                                value: isSelected,
+                                activeColor: Colors.black,
+                                onChanged: (checked) {
+                                  setState(() {
+                                    if (checked == true) {
+                                      selectedUserIds.add(id);
+                                    } else {
+                                      selectedUserIds.remove(id);
+                                    }
+                                    if (_userError && selectedUserIds.isNotEmpty) {
+                                      _userError = false;
+                                    }
+                                  });
+                                },
+                              );
+                            }).toList(),
+                          ),
                   ),
+                  if (_userError)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6, left: 12),
+                      child: Text(
+                        'Vyberte alespoň jednoho zaměstnance',
+                        style: TextStyle(fontSize: 12, color: Colors.red[700]),
+                      ),
+                    ),
                   const SizedBox(height: 24),
 
                   const Text(

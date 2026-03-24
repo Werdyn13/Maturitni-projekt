@@ -136,6 +136,100 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     }
   }
 
+  Future<void> _showOrderDetails(int orderId) async {
+    try {
+      final items = await _ordersService.getOrderItems(orderId);
+
+      if (!mounted) return;
+
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Obsah objednávky'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: items.isEmpty
+                ? const Center(
+                    child: Text('Objednávka neobsahuje žádné položky'),
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      final item = items[index];
+                      final product = item['Receptury'] ?? {};
+                      final mnozstvi = item['mnozstvi'] ?? 0;
+                      final cena = product['cena'] ?? 0;
+                      final celkovaHodnota = mnozstvi * cena;
+
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                product['nazev'] ?? 'Bez názvu',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Počet kusů: $mnozstvi',
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  Text(
+                                    'Cena za kus: $cena Kč',
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: Text(
+                                  'Celk: $celkovaHodnota Kč',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.brown,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Zavřít'),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Chyba při načítání položek: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -264,6 +358,13 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                     }
                   },
                 ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.visibility, color: Colors.blue, size: 20),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                tooltip: 'Zobrazit obsah',
+                onPressed: () => _showOrderDetails(order['id']),
               ),
               IconButton(
                 icon: const Icon(Icons.delete, color: Colors.red, size: 20),

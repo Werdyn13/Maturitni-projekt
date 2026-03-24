@@ -445,9 +445,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  Future<void> _completeTask(int id) async {
+  Future<void> _completeTask(int id,
+      {String? opakovat, DateTime? naDen, DateTime? platnostDo}) async {
     try {
-      await _nastenkaService.completeTask(id);
+      await _nastenkaService.completeTask(id,
+          opakovat: opakovat, naDen: naDen, platnostDo: platnostDo);
       await _loadTasks();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -574,7 +576,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             value: false,
                             onChanged: (value) {
                               if (value == true) {
-                                _completeTask(task['id']);
+                                final naDen = DateTime.parse(task['na_den']);
+                                final opakovat = task['opakovat'] as String?;
+                                final platnostDoRaw = task['platnost_do'] as String?;
+                                final platnostDo = platnostDoRaw != null
+                                    ? DateTime.parse(platnostDoRaw)
+                                    : null;
+                                _completeTask(task['id'],
+                                    opakovat: opakovat,
+                                    naDen: naDen,
+                                    platnostDo: platnostDo);
                               }
                             },
                           ),
@@ -591,8 +602,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               const SizedBox(height: 4),
                               Text('Pro: $userName'),
                               Text('Datum: ${date.day}.${date.month}.${date.year}'),
-                              if (task['opakovat'] != null && task['opakovat'] != 'Žádné')
+                              if (task['opakovat'] != null && task['opakovat'] != 'Žádné') ...[
                                 Text('Opakovat: ${task['opakovat']}'),
+                                if (task['platnost_do'] != null)
+                                  Builder(builder: (context) {
+                                    final d = DateTime.parse(task['platnost_do']);
+                                    return Text(
+                                      'Platnost do: ${d.day}.${d.month}.${d.year}',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.orange,
+                                      ),
+                                    );
+                                  }),
+                              ],
                             ],
                           ),
                           isThreeLine: true,

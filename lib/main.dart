@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/dashboard_screen.dart';
+import 'screens/employee_home_screen.dart';
 import 'services/auth_service.dart';
 
 Future<void> main() async {
@@ -56,7 +57,15 @@ class MyApp extends StatelessWidget {
         return const LoginScreen();
       }
       final isAdmin = profile['admin'] == true;
-      return isAdmin ? const DashboardScreen() : const HomeScreen();
+      final isEmployee = profile['zamestnanec'] == true;
+
+      if (isAdmin) {
+        return const DashboardScreen();
+      }
+      if (isEmployee) {
+        return const EmployeeHomeScreen();
+      }
+      return const HomeScreen();
     }
 
     return const HomeScreen();

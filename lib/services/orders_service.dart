@@ -88,11 +88,11 @@ class OrdersService {
         .select('mnozstvi, zbozi_id, Receptury(cena)')
         .eq('objednavka_id', orderId);
 
-    double totalPrice = 0;
+    int totalPrice = 0;
     for (var item in items) {
-      final mnozstvi = item['mnozstvi'] as int;
-      final cena = item['Receptury']['cena'] as num;
-      totalPrice += mnozstvi * cena;
+      final mnozstvi = (item['mnozstvi'] as num?)?.toInt() ?? 0;
+      final cena = (item['Receptury']?['cena'] as num?) ?? 0;
+      totalPrice += (mnozstvi * cena).round();
     }
 
     // Uložit novou celkovou cenu
@@ -176,6 +176,19 @@ class OrdersService {
         .from('Objednavky')
         .delete()
         .eq('id', orderId);
+  }
+
+  // Aktualizovat množství položky; pokud klesne na 0, položku smaže
+  Future<void> updateItemQuantity(int itemId, int orderId, int newQuantity) async {
+    if (newQuantity <= 0) {
+      await removeItemFromOrder(itemId, orderId);
+    } else {
+      await _supabase
+          .from('ObjednavkaZbozi')
+          .update({'mnozstvi': newQuantity})
+          .eq('id', itemId);
+      await updateOrderTotalPrice(orderId);
+    }
   }
 
   // Získat aktuální košík (objednávku + položky)
