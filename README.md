@@ -24,7 +24,7 @@ Mobilní aplikace pro pekárnu, umožní rychlé objednání zboží a kontrolu 
 
 ## Chybí v projektu (nutno dodělat, použít k tomu zadání)
 - ~~Opakované objednávky~~
-- ~~Zaměstnanci~~
+- Zaměstnanci
 - ~~Responzivita tabulky v dashboard~~
 - ~~Admin může posílat zprávy všem na nástěnce~~
 
