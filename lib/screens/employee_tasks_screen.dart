@@ -24,8 +24,14 @@ class _EmployeeTasksScreenState extends State<EmployeeTasksScreen> {
     setState(() => _isLoading = true);
     try {
       final tasks = await _nastenkaService.getTasksForCurrentUser();
+      final checked = <int>{};
+      for (final t in tasks) {
+        if (t['splneno'] == true) checked.add(t['id'] as int);
+      }
       setState(() {
         _tasks = tasks;
+        _checkedIds.clear();
+        _checkedIds.addAll(checked);
         _isLoading = false;
       });
     } catch (e) {
@@ -125,14 +131,16 @@ class _EmployeeTasksScreenState extends State<EmployeeTasksScreen> {
                                 Checkbox(
                                   value: _checkedIds.contains(task['id'] as int),
                                   activeColor: Colors.black,
-                                  onChanged: (value) {
+                                  onChanged: (value) async {
+                                    final id = task['id'] as int;
                                     setState(() {
                                       if (value == true) {
-                                        _checkedIds.add(task['id'] as int);
+                                        _checkedIds.add(id);
                                       } else {
-                                        _checkedIds.remove(task['id'] as int);
+                                        _checkedIds.remove(id);
                                       }
                                     });
+                                    await _nastenkaService.setChecked(id, value ?? false);
                                   },
                                 ),
                                 const SizedBox(width: 8),

@@ -6,6 +6,7 @@ import '../services/auth_service.dart';
 import '../services/nastenka_service.dart';
 import 'add_task_screen.dart';
 import 'admin_orders_screen.dart';
+import 'admin_shifts_screen.dart';
 import 'admin_products_screen.dart';
 import 'manage_users_screen.dart';
 
@@ -131,6 +132,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 icon: Icons.dashboard,
                 label: 'Nástěnka',
               ),
+              SidebarXItem(
+                icon: Icons.calendar_month,
+                label: 'Směny',
+              ),
             ],
           ),
           Expanded(
@@ -156,6 +161,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         return _buildOrdersTab();
       case 3:
         return _buildNastenkaTab();
+      case 4:
+        return const AdminShiftsScreen();
       default:
         return const Center(child: Text('Select a tab'));
     }
@@ -451,14 +458,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       await _nastenkaService.completeTask(id,
           opakovat: opakovat, naDen: naDen, platnostDo: platnostDo);
       await _loadTasks();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Úkol byl označen jako splněný'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -568,33 +567,78 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ? '${user['jmeno'] ?? ''} ${user['prijmeni'] ?? ''}'.trim()
                           : 'Neznámý';
                       
+                      final isSplneno = task['splneno'] == true;
+
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
                         elevation: 2,
                         child: ListTile(
-                          leading: Checkbox(
-                            value: false,
-                            onChanged: (value) {
-                              if (value == true) {
-                                final naDen = DateTime.parse(task['na_den']);
-                                final opakovat = task['opakovat'] as String?;
-                                final platnostDoRaw = task['platnost_do'] as String?;
-                                final platnostDo = platnostDoRaw != null
-                                    ? DateTime.parse(platnostDoRaw)
-                                    : null;
-                                _completeTask(task['id'],
-                                    opakovat: opakovat,
-                                    naDen: naDen,
-                                    platnostDo: platnostDo);
+                          leading: isSplneno
+                              ? const CircleAvatar(
+                                  radius: 16,
+                                  backgroundColor: Colors.green,
+                                  child: Icon(Icons.check,
+                                      color: Colors.white, size: 18),
+                                )
+                              : const CircleAvatar(
+                                  radius: 16,
+                                  backgroundColor: Colors.black12,
+                                  child: Icon(Icons.hourglass_empty,
+                                      color: Colors.black54, size: 16),
+                                ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete_outline,
+                                color: Colors.red),
+                            tooltip: 'Smazat úkol',
+                            onPressed: () async {
+                              try {
+                                await _nastenkaService
+                                    .deleteTask(task['id'] as int);
+                                await _loadTasks();
+                              } catch (e) {
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Chyba: $e'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
                               }
                             },
                           ),
-                          title: Text(
-                            task['text_ukolu'] ?? '',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          title: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  task['text_ukolu'] ?? '',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              if (isSplneno)
+                                Container(
+                                  margin: const EdgeInsets.only(left: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.shade50,
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                        color: Colors.green.shade300),
+                                  ),
+                                  child: Text(
+                                    'Splněno zaměstnancem',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.green.shade700,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

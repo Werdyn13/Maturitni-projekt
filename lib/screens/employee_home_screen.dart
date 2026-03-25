@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import 'employee_orders_screen.dart';
 import 'employee_tasks_screen.dart';
+import 'employee_shifts_screen.dart';
 import 'login_screen.dart';
 
 class EmployeeHomeScreen extends StatefulWidget {
@@ -17,11 +18,13 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
   static const List<Widget> _pages = [
     EmployeeOrdersScreen(),
     EmployeeTasksScreen(),
+    EmployeeShiftsScreen(),
   ];
 
   static const List<String> _titles = [
     'Přehled objednávek',
-    'Moje úkoly',
+    'Úkoly',
+    'Směny',
   ];
 
   @override
@@ -64,6 +67,11 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
             icon: Icon(Icons.task_outlined),
             activeIcon: Icon(Icons.task),
             label: 'Úkoly',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_month_outlined),
+            activeIcon: Icon(Icons.calendar_month),
+            label: 'Směny',
           ),
         ],
       ),

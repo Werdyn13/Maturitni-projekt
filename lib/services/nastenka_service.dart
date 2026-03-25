@@ -45,6 +45,14 @@ class NastenkaService {
     }
   }
 
+  // Nastavit zaskrtnutí úkolu zaměstnancem
+  Future<void> setChecked(int id, bool value) async {
+    await _supabase
+        .from('Nastenka')
+        .update({'splneno': value})
+        .eq('id', id);
+  }
+
   // Smazat úkol
   Future<void> deleteTask(int id) async {
     try {
