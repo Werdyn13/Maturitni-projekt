@@ -21,6 +21,7 @@ class _EmployeeTasksScreenState extends State<EmployeeTasksScreen> {
   }
 
   Future<void> _loadTasks() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     try {
       final tasks = await _nastenkaService.getTasksForCurrentUser();
@@ -28,6 +29,7 @@ class _EmployeeTasksScreenState extends State<EmployeeTasksScreen> {
       for (final t in tasks) {
         if (t['splneno'] == true) checked.add(t['id'] as int);
       }
+      if (!mounted) return;
       setState(() {
         _tasks = tasks;
         _checkedIds.clear();
@@ -35,6 +37,7 @@ class _EmployeeTasksScreenState extends State<EmployeeTasksScreen> {
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

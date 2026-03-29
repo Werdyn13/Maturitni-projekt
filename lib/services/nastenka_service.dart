@@ -29,8 +29,7 @@ class NastenkaService {
           ? DateTime(naDen.year, naDen.month + 6, naDen.day).toIso8601String()
           : null;
 
-      final rows = uzivatelIds
-          .map((id) => {
+      final rows = uzivatelIds.map((id) => {
                 'pro_uzivatele': id,
                 'text_ukolu': textUkolu,
                 'opakovat': opakovat,
@@ -88,7 +87,7 @@ class NastenkaService {
         }
       }
 
-      // Smazat pokud: jednorázový, nebo příští datum přesahuje platnost
+      // Smazat pokud: příští datum přesahuje platnost
       final expired =
           nextDate != null && platnostDo != null && nextDate.isAfter(platnostDo);
 
