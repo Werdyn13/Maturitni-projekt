@@ -3,6 +3,7 @@ import '../services/auth_service.dart';
 import 'employee_orders_screen.dart';
 import 'employee_tasks_screen.dart';
 import 'employee_shifts_screen.dart';
+import 'employee_sklad_screen.dart';
 import 'login_screen.dart';
 
 class EmployeeHomeScreen extends StatefulWidget {
@@ -19,12 +20,14 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
     EmployeeOrdersScreen(),
     EmployeeTasksScreen(),
     EmployeeShiftsScreen(),
+    EmployeeSkladScreen(),
   ];
 
   static const List<String> _titles = [
     'Přehled objednávek',
     'Úkoly',
     'Směny',
+    'Sklad',
   ];
 
   @override
@@ -72,6 +75,11 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen> {
             icon: Icon(Icons.calendar_month_outlined),
             activeIcon: Icon(Icons.calendar_month),
             label: 'Směny',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.inventory_2_outlined),
+            activeIcon: Icon(Icons.inventory_2),
+            label: 'Sklad',
           ),
         ],
       ),

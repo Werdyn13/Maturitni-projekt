@@ -55,6 +55,11 @@ class SmenyService {
     });
   }
 
+  // Admin: aktualizovat druh směny
+  Future<void> updateShift(int id, String druhSmeny) async {
+    await _supabase.from('Smeny').update({'druh_smeny': druhSmeny}).eq('id', id);
+  }
+
   // Admin: smazat směnu podle id
   Future<void> deleteShift(int id) async {
     await _supabase.from('Smeny').delete().eq('id', id);

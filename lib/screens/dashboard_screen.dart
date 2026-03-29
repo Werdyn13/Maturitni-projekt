@@ -8,6 +8,7 @@ import 'add_task_screen.dart';
 import 'admin_orders_screen.dart';
 import 'admin_shifts_screen.dart';
 import 'admin_products_screen.dart';
+import 'admin_sklad_screen.dart';
 import 'manage_users_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -136,6 +137,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 icon: Icons.calendar_month,
                 label: 'Směny',
               ),
+              SidebarXItem(
+                icon: Icons.inventory_2,
+                label: 'Sklad',
+              ),
             ],
           ),
           Expanded(
@@ -163,6 +168,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         return _buildNastenkaTab();
       case 4:
         return const AdminShiftsScreen();
+      case 5:
+        return const AdminSkladScreen();
       default:
         return const Center(child: Text('Select a tab'));
     }
