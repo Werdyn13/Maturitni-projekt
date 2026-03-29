@@ -37,6 +37,7 @@ dependencies:
   supabase_flutter: ^2.10.3
   sidebarx: ^0.17.1
   pluto_grid: ^8.1.0
+  table_calendar: ^3.1.2
 
 dev_dependencies:
   flutter_test:

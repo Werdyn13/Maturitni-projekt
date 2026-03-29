@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../services/smeny_service.dart';
 import '../services/auth_service.dart';
 
@@ -51,8 +52,7 @@ class _AdminShiftsScreenState extends State<AdminShiftsScreen> {
         final uid = uzivatel['id'].toString();
         final dt = DateTime.tryParse(s['datum'] ?? '');
         if (dt == null) continue;
-        final key =
-            '${uid}_${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+        final key = '${uid}_${DateFormat('yyyy-MM-dd').format(dt)}';
         map[key] = s;
       }
 
@@ -106,8 +106,7 @@ class _AdminShiftsScreenState extends State<AdminShiftsScreen> {
     final empName =
         '${employee['jmeno'] ?? ''} ${employee['prijmeni'] ?? ''}'.trim();
     final date = _weekMonday.add(Duration(days: dayOffset));
-    final key =
-        '${empId}_${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    final key = '${empId}_${DateFormat('yyyy-MM-dd').format(date)}';
     final existing = _shiftMap[key];
 
     final messenger = ScaffoldMessenger.of(context);
@@ -158,13 +157,7 @@ class _AdminShiftsScreenState extends State<AdminShiftsScreen> {
         if (choice == '__delete__') {
           await _smenyService.deleteShift(existing['id'] as int);
         } else {
-          // Aktualizace = smazat starou + vložit novou se stejným datem, ale jiným druhem
-          await _smenyService.deleteShift(existing['id'] as int);
-          await _smenyService.addShift(
-            zamestnanecId: empId,
-            datum: date,
-            druhSmeny: choice,
-          );
+          await _smenyService.updateShift(existing['id'] as int, choice);
         }
         await _load();
       } catch (e) {
