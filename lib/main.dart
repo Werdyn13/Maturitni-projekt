@@ -25,7 +25,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Aplikace pro pekárnu',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
+        colorScheme: const ColorScheme.light(
+          primary: Colors.black,
+          onPrimary: Colors.white,
+          secondary: Colors.black,
+          onSecondary: Colors.white,
+          surface: Colors.white,
+          onSurface: Colors.black,
+        ),
+        cardColor: Colors.white,
         scaffoldBackgroundColor: Colors.white,
       ),
       home: FutureBuilder(
