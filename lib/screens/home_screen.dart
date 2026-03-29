@@ -52,6 +52,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    final screenWidth = mq.size.width;
+    final screenHeight = mq.size.height;
     return Scaffold(
       appBar: const AppBarWidget(),
       body: Column(
@@ -63,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
             
             Container(
-              height: 300,
+              height: screenHeight * 0.25,
               decoration: BoxDecoration(
                 color: Colors.grey[200],
                 image: const DecorationImage(
@@ -79,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text(
                       'Bánovská pekárna',
                       style: TextStyle(
-                        fontSize: 48,
+                        fontSize: screenWidth < 450 ? 26.0 : 42.0,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
                         shadows: [
@@ -94,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text(
                       'Pečeme s láskou každý den',
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: screenWidth < 450 ? 15.0 : 20.0,
                         fontStyle: FontStyle.italic,
                         color: Colors.grey[800],
                         shadows: [
@@ -115,32 +118,43 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Naše produkty',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 32,
+                    style: TextStyle(
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Center(
-                    child: _isLoading
-                        ? const CircularProgressIndicator()
-                        : Wrap(
-                            spacing: 20,
-                            runSpacing: 20,
-                            alignment: WrapAlignment.center,
-                            children: _categories.map((category) {
-                              return _buildProductCard(
-                                icon: _getIconForCategory(category),
-                                title: category,
-                                description: 'Prozkoumejte naši nabídku',
-                              );
-                            }).toList(),
-                          ),
-                  ),
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : LayoutBuilder(
+                          builder: (context, constraints) {
+                            final columns = constraints.maxWidth < 480 ? 2 : 3;
+                            final aspectRatio = columns == 2 ? 0.80 : 0.85;
+                            return GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: columns,
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
+                                childAspectRatio: aspectRatio,
+                              ),
+                              itemCount: _categories.length,
+                              itemBuilder: (context, index) {
+                                final category = _categories[index];
+                                return _buildProductCard(
+                                  icon: _getIconForCategory(category),
+                                  title: category,
+                                  description: 'Prozkoumejte naši nabídku',
+                                );
+                              },
+                            );
+                          },
+                        ),
                 ],
               ),
             ),
@@ -186,10 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
         borderRadius: BorderRadius.circular(16),
-        child: Container(
-          width: 200,
-          height: 220,
-          child: Card(
+        child: Card(
             elevation: 3,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
@@ -232,7 +243,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-      ),
     );
   }
 }

@@ -123,25 +123,25 @@ class _ProductsScreenState extends State<ProductsScreen> {
                           ],
                         ),
                       )
-                    : Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            maxWidth: 1200,
-                          ),
-                          child: GridView.builder(
+                    : LayoutBuilder(
+                        builder: (context, constraints) {
+                          final w = constraints.maxWidth;
+                          final columns = w < 500 ? 2 : w < 700 ? 3 : w < 950 ? 4 : 5;
+                          final aspectRatio = columns <= 2 ? 0.88 : columns == 3 ? 0.75 : columns == 4 ? 0.90 : 1.05;
+                          return GridView.builder(
                             padding: const EdgeInsets.all(16),
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 5,
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: columns,
                               crossAxisSpacing: 10,
                               mainAxisSpacing: 10,
-                              childAspectRatio: 1.1,
+                              childAspectRatio: aspectRatio,
                             ),
                             itemCount: _products.length,
                             itemBuilder: (context, index) {
                               return _buildProductCard(_products[index]);
                             },
-                          ),
-                        ),
+                          );
+                        },
                       ),
           ),
 
