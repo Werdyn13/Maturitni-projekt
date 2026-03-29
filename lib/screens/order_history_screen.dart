@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:table_calendar/table_calendar.dart';
 import '../widgets/app_bar_widget.dart';
 import '../services/orders_service.dart';
 
@@ -13,6 +14,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   final OrdersService _ordersService = OrdersService();
   List<Map<String, dynamic>> _orders = [];
   bool _isLoading = true;
+  DateTime _focusedDay = DateTime.now();
+  DateTime? _selectedDay;
 
   @override
   void initState() {
@@ -23,7 +26,6 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   Future<void> _loadOrders() async {
     try {
       final orders = await _ordersService.getUserOrders();
-
       setState(() {
         _orders = orders;
         _isLoading = false;
@@ -33,6 +35,15 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  List<Map<String, dynamic>> _getOrdersForDay(DateTime day) {
+    return _orders.where((order) {
+      final orderDate = DateTime.parse(order['datum_objednavky']);
+      return orderDate.year == day.year &&
+          orderDate.month == day.month &&
+          orderDate.day == day.day;
+    }).toList();
   }
 
   String _getStatusText(String status) {
@@ -71,6 +82,9 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedOrders =
+        _selectedDay != null ? _getOrdersForDay(_selectedDay!) : <Map<String, dynamic>>[];
+
     return Scaffold(
       appBar: const AppBarWidget(),
       body: Column(
@@ -79,60 +93,174 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : SingleChildScrollView(
-                    padding: const EdgeInsets.all(24.0),
+                    padding: const EdgeInsets.all(16.0),
                     child: Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 1000),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Text(
+                            const Text(
                               'Historie objednávek',
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 32,
+                              style: TextStyle(
+                                fontSize: 28,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black,
                               ),
                             ),
-                            const SizedBox(height: 40),
-                            if (_orders.isEmpty)
+                            const SizedBox(height: 16),
+                            // Calendar
+                            Card(
+                              elevation: 2,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8.0, vertical: 4.0),
+                                child: TableCalendar(
+                                  firstDay: DateTime.utc(2020, 1, 1),
+                                  lastDay: DateTime.utc(2030, 12, 31),
+                                  focusedDay: _focusedDay,
+                                  selectedDayPredicate: (day) =>
+                                      isSameDay(_selectedDay, day),
+                                  onDaySelected: (selectedDay, focusedDay) {
+                                    setState(() {
+                                      _selectedDay = isSameDay(_selectedDay, selectedDay)
+                                          ? null
+                                          : selectedDay;
+                                      _focusedDay = focusedDay;
+                                    });
+                                  },
+                                  eventLoader: _getOrdersForDay,
+                                  calendarFormat: CalendarFormat.month,
+                                  availableCalendarFormats: const {
+                                    CalendarFormat.month: 'Měsíc',
+                                  },
+                                  calendarStyle: const CalendarStyle(
+                                    markerDecoration: BoxDecoration(
+                                      color: Colors.black,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    selectedDecoration: BoxDecoration(
+                                      color: Colors.black,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    todayDecoration: BoxDecoration(
+                                      color: Color(0xFF757575),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    markersMaxCount: 1,
+                                  ),
+                                  headerStyle: const HeaderStyle(
+                                    formatButtonVisible: false,
+                                    titleCentered: true,
+                                    titleTextStyle: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  daysOfWeekStyle: const DaysOfWeekStyle(
+                                    weekdayStyle: TextStyle(fontSize: 12),
+                                    weekendStyle: TextStyle(
+                                        fontSize: 12, color: Colors.red),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            // Orders section
+                            if (_selectedDay != null) ...[
+                              Row(
+                                children: [
+                                  const Icon(Icons.calendar_today, size: 18),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '${_selectedDay!.day}.${_selectedDay!.month}.${_selectedDay!.year}',
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    '${selectedOrders.length} objednávek',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              if (selectedOrders.isEmpty)
+                                Card(
+                                  elevation: 2,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(32.0),
+                                    child: Column(
+                                      children: [
+                                        Icon(Icons.event_busy,
+                                            size: 48, color: Colors.grey[400]),
+                                        const SizedBox(height: 12),
+                                        Text(
+                                          'Žádné objednávky pro tento den',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: Colors.grey[700],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              else
+                                ...selectedOrders
+                                    .map((order) => _buildOrderCard(order)),
+                            ] else if (_orders.isEmpty) ...[
                               Card(
                                 elevation: 2,
                                 child: Padding(
                                   padding: const EdgeInsets.all(40.0),
                                   child: Column(
                                     children: [
-                                      Icon(
-                                        Icons.shopping_basket_outlined,
-                                        size: 80,
-                                        color: Colors.grey[400],
-                                      ),
-                                      const SizedBox(height: 24),
-                                      Text(
+                                      Icon(Icons.shopping_basket_outlined,
+                                          size: 64, color: Colors.grey[400]),
+                                      const SizedBox(height: 20),
+                                      const Text(
                                         'Zatím nemáte žádné objednávky',
                                         textAlign: TextAlign.center,
-                                        style: const TextStyle(
-                                          fontSize: 20,
+                                        style: TextStyle(
+                                          fontSize: 18,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.black,
                                         ),
                                       ),
-                                      const SizedBox(height: 12),
+                                      const SizedBox(height: 8),
                                       Text(
-                                        'Vaše budoucí objednávky se zobrazí zde',
+                                        'Vaše budoucí objednávky se zobrazí v kalendáři',
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.grey[700],
+                                          fontSize: 14,
+                                          color: Colors.grey[600],
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                              )
-                            else
-                              ..._orders.map((order) => _buildOrderCard(order)),
+                              ),
+                            ] else ...[
+                              Center(
+                                child: Text(
+                                  'Vyberte den v kalendáři pro zobrazení objednávek',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -143,15 +271,10 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             color: Colors.black,
-            child: Column(
-              children: [
-                Text(
-                  '© 2025 Bánovská pekárna',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white, fontSize: 12),
-                ),
-                const SizedBox(height: 4),
-              ],
+            child: const Text(
+              '© 2025 Bánovská pekárna',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white, fontSize: 12),
             ),
           ),
         ],
@@ -161,31 +284,33 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
   Widget _buildOrderCard(Map<String, dynamic> order) {
     final datum = DateTime.parse(order['datum_objednavky']);
-    final formattedDate = '${datum.day}.${datum.month}.${datum.year} ${datum.hour}:${datum.minute.toString().padLeft(2, '0')}';
-    
+    final formattedDate =
+        '${datum.day}.${datum.month}.${datum.year} ${datum.hour}:${datum.minute.toString().padLeft(2, '0')}';
+
     return Card(
       elevation: 2,
       margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Objednávka #${order['id']}',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                Expanded(
+                  child: Text(
+                    'Objednávka #${order['id']}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
                   ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+                    horizontal: 10,
+                    vertical: 5,
                   ),
                   decoration: BoxDecoration(
                     color: _getStatusColor(order['stav']),
@@ -202,30 +327,27 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Row(
               children: [
-                Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
-                const SizedBox(width: 8),
+                Icon(Icons.access_time, size: 14, color: Colors.grey[600]),
+                const SizedBox(width: 6),
                 Text(
                   formattedDate,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[700],
-                  ),
+                  style: TextStyle(fontSize: 13, color: Colors.grey[700]),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             const Divider(),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
                   'Celková cena:',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
                   ),
@@ -233,7 +355,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                 Text(
                   '${order['celkova_cena']} Kč',
                   style: const TextStyle(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
                   ),
