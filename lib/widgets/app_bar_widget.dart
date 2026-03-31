@@ -16,7 +16,7 @@ class AppBarWidget extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       leading: IconButton(
         icon: const Icon(Icons.bakery_dining),
-        tooltip: 'Home',
+        tooltip: 'Hlavní stránka',
         onPressed: () {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -28,7 +28,7 @@ class AppBarWidget extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         IconButton(
           icon: const Icon(Icons.shopping_basket),
-          tooltip: 'Orders',
+          tooltip: 'Košík',
           onPressed: () {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => const OrdersScreen()),
@@ -37,7 +37,7 @@ class AppBarWidget extends StatelessWidget implements PreferredSizeWidget {
         ),
         IconButton(
           icon: const Icon(Icons.email),
-          tooltip: 'Contact',
+          tooltip: 'Kontakt',
           onPressed: () {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => const ContactScreen()),
@@ -46,7 +46,7 @@ class AppBarWidget extends StatelessWidget implements PreferredSizeWidget {
         ),
         IconButton(
           icon: const Icon(Icons.person),
-          tooltip: 'Profile',
+          tooltip: 'Profil',
           onPressed: () {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => const ProfileScreen()),
@@ -55,7 +55,7 @@ class AppBarWidget extends StatelessWidget implements PreferredSizeWidget {
         ),
         IconButton(
           icon: const Icon(Icons.logout),
-          tooltip: 'Logout',
+          tooltip: 'Odhlásit se',
           onPressed: () async {
             await authService.signOut();
             if (context.mounted) {

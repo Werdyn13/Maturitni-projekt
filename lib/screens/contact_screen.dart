@@ -38,7 +38,7 @@ class ContactScreen extends StatelessWidget {
                       _buildContactCard(
                         icon: Icons.location_on,
                         title: 'Adresa',
-                        content: 'Bánov 224\n 687 54 Bánov, Česká republika',
+                        content: 'Bánov 224\n687 54 Bánov, Česká republika',
                       ),
                       const SizedBox(height: 16),
                       _buildContactCard(

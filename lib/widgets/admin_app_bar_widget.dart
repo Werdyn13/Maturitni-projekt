@@ -26,7 +26,7 @@ class AdminAppBarWidget extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         IconButton(
           icon: const Icon(Icons.person),
-          tooltip: 'Profile',
+          tooltip: 'Profil',
           onPressed: () {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => const ProfileScreen()),
@@ -35,7 +35,7 @@ class AdminAppBarWidget extends StatelessWidget implements PreferredSizeWidget {
         ),
         IconButton(
           icon: const Icon(Icons.logout),
-          tooltip: 'Logout',
+          tooltip: 'Odhlásit se',
           onPressed: () async {
             await authService.signOut();
             if (context.mounted) {
