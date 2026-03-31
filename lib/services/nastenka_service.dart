@@ -104,6 +104,31 @@ class NastenkaService {
     }
   }
 
+  // Odeslat zprávu adminovi e-mailem přes Resend edge function
+  Future<void> sendMessageToAdmin(String message) async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) throw Exception('Uživatel není přihlášen');
+
+    final userResponse = await _supabase
+        .from('Uzivatel')
+        .select('jmeno, prijmeni')
+        .eq('mail', user.email!)
+        .maybeSingle();
+
+    final String senderName = userResponse != null
+        ? '${userResponse['jmeno']} ${userResponse['prijmeni']}'
+        : user.email!;
+
+    await _supabase.functions.invoke(
+      'send-message-to-admin',
+      body: {
+        'senderName': senderName,
+        'senderEmail': user.email,
+        'message': message,
+      },
+    );
+  }
+
   // Získat úkoly pro přihlášeného uživatele
   Future<List<Map<String, dynamic>>> getTasksForCurrentUser() async {
     try {

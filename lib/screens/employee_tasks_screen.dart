@@ -12,6 +12,7 @@ class _EmployeeTasksScreenState extends State<EmployeeTasksScreen> {
   final NastenkaService _nastenkaService = NastenkaService();
   List<Map<String, dynamic>> _tasks = [];
   bool _isLoading = true;
+  bool _isSending = false;
   final Set<int> _checkedIds = {};
 
   @override
@@ -50,6 +51,74 @@ class _EmployeeTasksScreenState extends State<EmployeeTasksScreen> {
     }
   }
 
+  void _showSendMessageDialog() {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('Zpráva adminovi'),
+          content: TextField(
+            controller: controller,
+            maxLines: 5,
+            maxLength: 500,
+            decoration: const InputDecoration(
+              hintText: 'Napište zprávu...',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: _isSending ? null : () => Navigator.pop(ctx),
+              child: const Text('Zrušit'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: Colors.black),
+              onPressed: _isSending
+                  ? null
+                  : () async {
+                      final text = controller.text.trim();
+                      if (text.isEmpty) return;
+                      setDialogState(() => _isSending = true);
+                      setState(() => _isSending = true);
+                      try {
+                        await _nastenkaService.sendMessageToAdmin(text);
+                        if (!mounted) return;
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Zpráva byla odeslána'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      } catch (e) {
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Chyba při odesílání: $e'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      } finally {
+                        if (mounted) setState(() => _isSending = false);
+                        setDialogState(() => _isSending = false);
+                      }
+                    },
+              child: _isSending
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text('Odeslat'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Color _dateColor(DateTime date) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -63,6 +132,13 @@ class _EmployeeTasksScreenState extends State<EmployeeTasksScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _showSendMessageDialog,
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.message_outlined),
+        label: const Text('Zpráva adminovi'),
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
