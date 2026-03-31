@@ -40,6 +40,7 @@ dependencies:
   sidebarx: ^0.17.1
   pluto_grid: ^8.1.0
   table_calendar: ^3.1.2
+  shared_preferences: ^2.3.3
 
 dev_dependencies:
   flutter_test:

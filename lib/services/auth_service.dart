@@ -1,4 +1,8 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+const _kLoginTime = 'login_timestamp';
+const _kSessionDays = 5;
 
 class AuthService {
   final SupabaseClient _supabase = Supabase.instance.client;
@@ -57,6 +61,10 @@ class AuthService {
         throw Exception('Váš účet čeká na schválení administrátorem.');
       }
 
+      // Uložit čas přihlášení
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_kLoginTime, DateTime.now().toIso8601String());
+
       return response;
     } catch (e) {
       rethrow;
@@ -67,9 +75,21 @@ class AuthService {
   Future<void> signOut() async {
     try {
       await _supabase.auth.signOut();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_kLoginTime);
     } catch (e) {
       rethrow;
     }
+  }
+
+  // Zkontrolovat, zda nevypršela platnost relace (5 dní)
+  static Future<bool> isSessionExpired() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_kLoginTime);
+    if (raw == null) return true;
+    final loginTime = DateTime.tryParse(raw);
+    if (loginTime == null) return true;
+    return DateTime.now().difference(loginTime).inDays >= _kSessionDays;
   }
 
   Stream<AuthState> get authStateChanges => _supabase.auth.onAuthStateChange;

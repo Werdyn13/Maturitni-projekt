@@ -60,6 +60,12 @@ class MyApp extends StatelessWidget {
       return const LoginScreen();
     }
 
+    // Odhlásit uživatele po 5 dnech
+    if (await AuthService.isSessionExpired()) {
+      await Supabase.instance.client.auth.signOut();
+      return const LoginScreen();
+    }
+
     final authService = AuthService();
     final userEmail = session.user.email;
     if (userEmail != null) {
