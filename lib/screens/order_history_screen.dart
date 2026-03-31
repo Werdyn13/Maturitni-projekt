@@ -117,6 +117,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8.0, vertical: 4.0),
                                 child: TableCalendar(
+                                  locale: 'cs_CZ',
                                   firstDay: DateTime.utc(2020, 1, 1),
                                   lastDay: DateTime.utc(2030, 12, 31),
                                   focusedDay: _focusedDay,
