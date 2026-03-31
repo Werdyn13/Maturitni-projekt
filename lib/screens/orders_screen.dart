@@ -38,7 +38,30 @@ class _OrdersScreenState extends State<OrdersScreen> {
     }
   }
 
+  // Returns the active ordering window info based on current time.
+  // Ranní (06–14): order window 22:00–05:59
+  // Odpolední (14–22): order window 06:00–13:59
+  // Noční (22–06): order window 14:00–21:59
+  ({String forShift, String closesAt})? _getActiveOrderingWindow() {
+    final hour = DateTime.now().hour;
+    if (hour >= 22 || hour < 6)  return (forShift: 'Ranní',     closesAt: '06:00');
+    if (hour >= 6  && hour < 14) return (forShift: 'Odpolední', closesAt: '14:00');
+    if (hour >= 14 && hour < 21) return (forShift: 'Noční',     closesAt: '21:00'); // opravit
+    return null;
+  }
+
   Future<void> _completeOrder() async {
+    final window = _getActiveOrderingWindow();
+    if (window == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Objednávky jsou momentálně uzavřeny'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     if (_currentCart == null || _currentCart!['items'].isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -241,6 +264,48 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 12),
+                                Builder(builder: (context) {
+                                  final window = _getActiveOrderingWindow();
+                                  if (window == null) {
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                      decoration: BoxDecoration(
+                                        color: Colors.red.shade50,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: Colors.red.shade200),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.lock_outline, size: 16, color: Colors.red.shade700),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Objednávky jsou momentálně uzavřeny',
+                                            style: TextStyle(color: Colors.red.shade700, fontSize: 13),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                  return Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.shade50,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: Colors.green.shade200),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.schedule, size: 16, color: Colors.green.shade700),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Objednávky pro ${window.forShift} směnu · Otevřeno do ${window.closesAt}',
+                                          style: TextStyle(color: Colors.green.shade700, fontSize: 13),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }),
+                                const SizedBox(height: 12),
                                 Align(
                                   alignment: Alignment.centerRight,
                                   child: ElevatedButton.icon(
@@ -361,7 +426,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                 width: double.infinity,
                                 height: 60,
                                 child: ElevatedButton.icon(
-                                  onPressed: _completeOrder,
+                                  onPressed: _getActiveOrderingWindow() != null ? _completeOrder : null,
                                   icon: const Icon(Icons.check_circle, size: 28),
                                   label: const Text(
                                     'Dokončit objednávku',
