@@ -33,18 +33,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadUserProfile() async {
-    final user = _authService.currentUser;
-    if (user != null && user.email != null) {
-      final profile = await _authService.getUserProfile(user.email!);
-      setState(() {
-        _userProfile = profile;
-        _isLoading = false;
-        if (profile != null) {
-          _jmenoController.text = profile['jmeno'] ?? '';
-          _prijmeniController.text = profile['prijmeni'] ?? '';
-        }
-      });
-    } else {
+    try {
+      final user = _authService.currentUser;
+      if (user != null && user.email != null) {
+        final profile = await _authService.getUserProfile(user.email!);
+        if (!mounted) return;
+        setState(() {
+          _userProfile = profile;
+          _isLoading = false;
+          if (profile != null) {
+            _jmenoController.text = profile['jmeno'] ?? '';
+            _prijmeniController.text = profile['prijmeni'] ?? '';
+          }
+        });
+      } else {
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
     }
   }

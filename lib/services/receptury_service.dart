@@ -8,7 +8,7 @@ class RecepturyService {
     try {
       final response = await _supabase
           .from('Receptury')
-          .select()
+          .select('*, Kategorie(nazev)')
           .order('nazev');
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
@@ -19,14 +19,14 @@ class RecepturyService {
   // Přidat novou recepturu
   Future<void> addReceptura({
     required String nazev,
-    required String kategorie,
+    required int kategorieId,
     String? suroviny,
     int? mnozstvi,
   }) async {
     try {
       await _supabase.from('Receptury').insert({
         'nazev': nazev,
-        'kategorie': kategorie,
+        'kategorie_id': kategorieId,
         'suroviny': suroviny,
         'mnozstvi': mnozstvi,
       });
@@ -39,7 +39,7 @@ class RecepturyService {
   Future<void> updateReceptura({
     required int id,
     String? nazev,
-    String? kategorie,
+    int? kategorieId,
     String? suroviny,
     int? mnozstvi,
   }) async {
@@ -47,7 +47,7 @@ class RecepturyService {
       final updateData = <String, dynamic>{};
       
       if (nazev != null) updateData['nazev'] = nazev;
-      if (kategorie != null) updateData['kategorie'] = kategorie;
+      if (kategorieId != null) updateData['kategorie_id'] = kategorieId;
       if (suroviny != null) updateData['suroviny'] = suroviny;
       if (mnozstvi != null) updateData['mnozstvi'] = mnozstvi;
       
@@ -55,6 +55,19 @@ class RecepturyService {
           .from('Receptury')
           .update(updateData)
           .eq('id', id);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Získat všechny kategorie
+  Future<List<Map<String, dynamic>>> getKategorie() async {
+    try {
+      final response = await _supabase
+          .from('Kategorie')
+          .select()
+          .order('nazev');
+      return List<Map<String, dynamic>>.from(response);
     } catch (e) {
       rethrow;
     }

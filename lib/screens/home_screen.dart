@@ -25,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final receptury = await _recepturyService.getAllReceptury();
       final categoriesSet = receptury
-          .map((r) => r['kategorie']?.toString() ?? '')
+          .map((r) => r['Kategorie']?['nazev']?.toString() ?? '')
           .where((c) => c.isNotEmpty)
           .toSet();
       

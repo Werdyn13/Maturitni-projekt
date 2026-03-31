@@ -33,7 +33,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
     try {
       final allReceptury = await _recepturyService.getAllReceptury();
       final filteredProducts = allReceptury
-          .where((r) => r['kategorie']?.toString() == widget.category)
+          .where((r) => r['Kategorie']?['nazev']?.toString() == widget.category)
           .toList();
 
       setState(() {
