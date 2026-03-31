@@ -22,6 +22,8 @@ class _LoginScreenState extends State<LoginScreen>
 
   bool _isLoading = false;
   bool _isRegistering = false;
+  bool _showPassword = false;
+  bool _showConfirmPassword = false;
 
   // Animace login
   late final AnimationController _entryController;
@@ -111,6 +113,24 @@ class _LoginScreenState extends State<LoginScreen>
 
     if (_passwordController.text != _confirmPasswordController.text) {
       _showMessage('Hesla se neshodují');
+      return;
+    }
+
+    final password = _passwordController.text;
+    if (password.length < 8) {
+      _showMessage('Heslo musí mít alespoň 8 znaků');
+      return;
+    }
+    if (!password.contains(RegExp(r'[A-Z]'))) {
+      _showMessage('Heslo musí obsahovat alespoň jedno velké písmeno');
+      return;
+    }
+    if (!password.contains(RegExp(r'[0-9]'))) {
+      _showMessage('Heslo musí obsahovat alespoň jedno číslo');
+      return;
+    }
+    if (!password.contains(RegExp(r'[^\w\s]'))) {
+      _showMessage('Heslo musí obsahovat alespoň jeden speciální znak');
       return;
     }
 
@@ -213,10 +233,14 @@ class _LoginScreenState extends State<LoginScreen>
 
           _buildInput("Email", Icons.email, _emailController, false),
           const SizedBox(height: 16),
-          _buildInput("Heslo", Icons.lock, _passwordController, true),
+          _buildInput("Heslo", Icons.lock, _passwordController, !_showPassword,
+              onToggle: () => setState(() => _showPassword = !_showPassword),
+              isVisible: _showPassword),
           if (_isRegistering) ...[
             const SizedBox(height: 16),
-            _buildInput("Potvrďte heslo", Icons.lock_outline, _confirmPasswordController, true),
+            _buildInput("Potvrďte heslo", Icons.lock_outline, _confirmPasswordController, !_showConfirmPassword,
+                onToggle: () => setState(() => _showConfirmPassword = !_showConfirmPassword),
+                isVisible: _showConfirmPassword),
           ],
           const SizedBox(height: 22),
 
@@ -242,7 +266,8 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildInput(
-      String label, IconData icon, TextEditingController controller, bool obscure) {
+      String label, IconData icon, TextEditingController controller, bool obscure,
+      {VoidCallback? onToggle, bool isVisible = false}) {
     return TextField(
       controller: controller,
       obscureText: obscure,
@@ -251,6 +276,16 @@ class _LoginScreenState extends State<LoginScreen>
         labelText: label,
         labelStyle: TextStyle(color: Colors.grey[600]),
         prefixIcon: Icon(icon, color: Colors.grey[600], size: 20),
+        suffixIcon: onToggle != null
+            ? IconButton(
+                icon: Icon(
+                  isVisible ? Icons.visibility_off : Icons.visibility,
+                  color: Colors.grey[600],
+                  size: 20,
+                ),
+                onPressed: onToggle,
+              )
+            : null,
         filled: true,
         fillColor: Colors.grey[50],
         enabledBorder: OutlineInputBorder(
