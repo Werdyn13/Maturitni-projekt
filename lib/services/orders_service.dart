@@ -330,4 +330,22 @@ class OrdersService {
   Future<void> cancelDraftOrder(int orderId) async {
     await deleteOrder(orderId);
   }
+
+  // Odeslat email uživateli, že jeho objednávka je připravena
+  Future<void> sendOrderReadyEmail({
+    required String userEmail,
+    required String userName,
+    required int orderId,
+    required num orderTotal,
+  }) async {
+    await _supabase.functions.invoke(
+      'send-order-ready-email',
+      body: {
+        'userEmail': userEmail,
+        'userName': userName,
+        'orderId': orderId,
+        'orderTotal': orderTotal,
+      },
+    );
+  }
 }

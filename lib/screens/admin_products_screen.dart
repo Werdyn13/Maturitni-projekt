@@ -12,6 +12,7 @@ class AdminProductsScreen extends StatefulWidget {
 class _AdminProductsScreenState extends State<AdminProductsScreen> {
   final RecepturyService _recepturyService = RecepturyService();
   List<Map<String, dynamic>> _receptury = [];
+  List<Map<String, dynamic>> _kategorie = [];
   bool _isLoading = false;
   bool _recepturyLoaded = false;
   PlutoGridStateManager? stateManager;
@@ -20,6 +21,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
   void initState() {
     super.initState();
     _loadReceptury();
+    _loadKategorie();
   }
 
   Future<void> _loadReceptury() async {
@@ -45,6 +47,13 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
         );
       }
     }
+  }
+
+  Future<void> _loadKategorie() async {
+    try {
+      final kategorie = await _recepturyService.getKategorie();
+      setState(() => _kategorie = kategorie);
+    } catch (_) {}
   }
 
   Future<void> _deleteReceptura(int id) async {
@@ -94,97 +103,105 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
 
   void _showEditRecepturaDialog(Map<String, dynamic> receptura) {
     final nazevController = TextEditingController(text: receptura['nazev']);
-    final kategorieController = TextEditingController(text: receptura['kategorie']);
     final surovinyController = TextEditingController(text: receptura['suroviny'] ?? '');
     final mnozstviController = TextEditingController(
       text: receptura['mnozstvi']?.toString() ?? '',
     );
+    int? selectedKategorieId = receptura['kategorie_id'] as int?;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Upravit produkt'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nazevController,
-                decoration: const InputDecoration(
-                  labelText: 'Název',
-                  border: OutlineInputBorder(),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Upravit produkt'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nazevController,
+                  decoration: const InputDecoration(
+                    labelText: 'Název',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: kategorieController,
-                decoration: const InputDecoration(
-                  labelText: 'Kategorie',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<int>(
+                  value: selectedKategorieId,
+                  decoration: const InputDecoration(
+                    labelText: 'Kategorie',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: _kategorie.map((k) => DropdownMenuItem<int>(
+                    value: k['id'] as int,
+                    child: Text(k['nazev'] as String),
+                  )).toList(),
+                  onChanged: (val) => setDialogState(() => selectedKategorieId = val),
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: surovinyController,
-                decoration: const InputDecoration(
-                  labelText: 'Suroviny',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: surovinyController,
+                  decoration: const InputDecoration(
+                    labelText: 'Suroviny',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 3,
                 ),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: mnozstviController,
-                decoration: const InputDecoration(
-                  labelText: 'Množství',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: mnozstviController,
+                  decoration: const InputDecoration(
+                    labelText: 'Množství',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
                 ),
-                keyboardType: TextInputType.number,
-              ),
-            ],
+              ],
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Zrušit'),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (selectedKategorieId == null) return;
+                try {
+                  await _recepturyService.updateReceptura(
+                    id: receptura['id'],
+                    nazev: nazevController.text,
+                    kategorieId: selectedKategorieId,
+                    suroviny: surovinyController.text.isEmpty ? null : surovinyController.text,
+                    mnozstvi: mnozstviController.text.isEmpty
+                      ? null
+                      : int.tryParse(mnozstviController.text),
+                  );
+                  await _loadReceptury();
+                  if (mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Produkt byl úspěšně upraven'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Chyba při aktualizaci produktu: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              },
+              child: const Text('Uložit'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Zrušit'),
-          ),
-          TextButton(
-            onPressed: () async {
-              try {
-                await _recepturyService.updateReceptura(
-                  id: receptura['id'],
-                  nazev: nazevController.text,
-                  kategorie: kategorieController.text,
-                  suroviny: surovinyController.text.isEmpty ? null : surovinyController.text,
-                  mnozstvi: mnozstviController.text.isEmpty 
-                    ? null 
-                    : int.tryParse(mnozstviController.text),
-                );
-                await _loadReceptury();
-                if (mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Produkt byl úspěšně upraven'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Chyba při aktualizaci produktu: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
-            },
-            child: const Text('Uložit'),
-          ),
-        ],
       ),
     );
   }
@@ -195,6 +212,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
       builder: (context) => _AddRecepturaDialog(
         recepturyService: _recepturyService,
         onSuccess: _loadReceptury,
+        kategorie: _kategorie,
       ),
     );
   }
@@ -280,7 +298,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
       return PlutoRow(
         cells: {
           'nazev': PlutoCell(value: receptura['nazev'] ?? ''),
-          'kategorie': PlutoCell(value: receptura['kategorie'] ?? ''),
+          'kategorie': PlutoCell(value: receptura['Kategorie']?['nazev'] ?? ''),
           'suroviny': PlutoCell(value: receptura['suroviny'] ?? ''),
           'mnozstvi': PlutoCell(
             value: receptura['mnozstvi'] != null 
@@ -378,10 +396,12 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
 class _AddRecepturaDialog extends StatefulWidget {
   final RecepturyService recepturyService;
   final VoidCallback onSuccess;
+  final List<Map<String, dynamic>> kategorie;
 
   const _AddRecepturaDialog({
     required this.recepturyService,
     required this.onSuccess,
+    required this.kategorie,
   });
 
   @override
@@ -390,9 +410,9 @@ class _AddRecepturaDialog extends StatefulWidget {
 
 class _AddRecepturaDialogState extends State<_AddRecepturaDialog> {
   final nazevController = TextEditingController();
-  final kategorieController = TextEditingController();
   final surovinyController = TextEditingController();
   final mnozstviController = TextEditingController();
+  int? _selectedKategorieId;
 
   bool _nazevError = false;
   bool _kategorieError = false;
@@ -400,7 +420,6 @@ class _AddRecepturaDialogState extends State<_AddRecepturaDialog> {
   @override
   void dispose() {
     nazevController.dispose();
-    kategorieController.dispose();
     surovinyController.dispose();
     mnozstviController.dispose();
     super.dispose();
@@ -409,7 +428,7 @@ class _AddRecepturaDialogState extends State<_AddRecepturaDialog> {
   Future<void> _handleSubmit() async {
     setState(() {
       _nazevError = nazevController.text.isEmpty;
-      _kategorieError = kategorieController.text.isEmpty;
+      _kategorieError = _selectedKategorieId == null;
     });
 
     if (_nazevError || _kategorieError) {
@@ -419,10 +438,10 @@ class _AddRecepturaDialogState extends State<_AddRecepturaDialog> {
     try {
       await widget.recepturyService.addReceptura(
         nazev: nazevController.text,
-        kategorie: kategorieController.text,
+        kategorieId: _selectedKategorieId!,
         suroviny: surovinyController.text.isEmpty ? null : surovinyController.text,
-        mnozstvi: mnozstviController.text.isEmpty 
-          ? null 
+        mnozstvi: mnozstviController.text.isEmpty
+          ? null
           : int.tryParse(mnozstviController.text),
       );
       widget.onSuccess();
@@ -487,26 +506,26 @@ class _AddRecepturaDialogState extends State<_AddRecepturaDialog> {
                 ),
               ),
             const SizedBox(height: 16),
-            TextField(
-              controller: kategorieController,
+            DropdownButtonFormField<int>(
+              value: _selectedKategorieId,
               decoration: InputDecoration(
                 labelText: 'Kategorie *',
                 border: const OutlineInputBorder(),
-                errorBorder: _kategorieError
+                enabledBorder: _kategorieError
                     ? const OutlineInputBorder(
                         borderSide: BorderSide(color: Colors.red, width: 2),
                       )
-                    : null,
-                focusedErrorBorder: _kategorieError
-                    ? const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.red, width: 2),
-                      )
-                    : null,
+                    : const OutlineInputBorder(),
               ),
-              onChanged: (value) {
-                if (_kategorieError && value.isNotEmpty) {
-                  setState(() => _kategorieError = false);
-                }
+              items: widget.kategorie.map((k) => DropdownMenuItem<int>(
+                value: k['id'] as int,
+                child: Text(k['nazev'] as String),
+              )).toList(),
+              onChanged: (val) {
+                setState(() {
+                  _selectedKategorieId = val;
+                  if (_kategorieError && val != null) _kategorieError = false;
+                });
               },
             ),
             if (_kategorieError)

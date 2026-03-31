@@ -71,6 +71,41 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
     try {
       await _ordersService.updateOrderStatus(orderId, newStatus);
 
+      if (newStatus == 'pripravena') {
+        final order = _orders.firstWhere(
+          (o) => o['id'] == orderId,
+          orElse: () => {},
+        );
+
+        final uzivatel = order['Uzivatel'] as Map<String, dynamic>?;
+        final userEmail = uzivatel?['mail'] as String?;
+        if (userEmail != null) {
+          final jmeno = uzivatel?['jmeno'] as String? ?? '';
+          final prijmeni = uzivatel?['prijmeni'] as String? ?? '';
+          final userName = '$jmeno $prijmeni'.trim();
+          final orderTotal = (order['celkova_cena'] as num?) ?? 0;
+
+          try {
+            await _ordersService.sendOrderReadyEmail(
+              userEmail: userEmail,
+              userName: userName.isNotEmpty ? userName : userEmail,
+              orderId: orderId,
+              orderTotal: orderTotal,
+            );
+          } catch (emailError) {
+            // Email failure should not block status update
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Stav změněn, ale email se nepodařilo odeslat: $emailError'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+            }
+          }
+        }
+      }
+
       if (newStatus == 'dokoncena') {
         final order = _orders.firstWhere(
           (o) => o['id'] == orderId,
