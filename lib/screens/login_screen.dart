@@ -25,7 +25,6 @@ class _LoginScreenState extends State<LoginScreen>
   bool _showPassword = false;
   bool _showConfirmPassword = false;
 
-  // Animace login
   late final AnimationController _entryController;
   late final Animation<double> _fadeAnim;
   late final Animation<Offset> _slideAnim;

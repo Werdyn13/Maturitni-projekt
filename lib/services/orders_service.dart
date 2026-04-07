@@ -76,7 +76,7 @@ class OrdersService {
       });
     }
 
-    // Aktualizovat celkovou cenu objednávky
+    
     await updateOrderTotalPrice(orderId);
   }
 

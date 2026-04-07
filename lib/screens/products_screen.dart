@@ -201,7 +201,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
               ],
             ),
             const SizedBox(height: 10),
-            // Name
+            // Název produktu a množství
             Text(
               product['nazev'] ?? 'Bez názvu',
               style: const TextStyle(
@@ -211,13 +211,6 @@ class _ProductsScreenState extends State<ProductsScreen> {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            if (product['mnozstvi'] != null) ...[
-              const SizedBox(height: 2),
-              Text(
-                '${product['mnozstvi']} ks',
-                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-              ),
-            ],
             const Spacer(),
             
             Row(

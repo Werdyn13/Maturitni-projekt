@@ -38,7 +38,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
     }
   }
 
-  // Returns the active ordering window info based on current time.
+  // Nastavení času pro objednávky
   // Ranní (06–14): order window 22:00–05:59
   // Odpolední (14–22): order window 06:00–13:59
   // Noční (22–06): order window 14:00–21:59
@@ -46,7 +46,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
     final hour = DateTime.now().hour;
     if (hour >= 22 || hour < 6)  return (forShift: 'Ranní',     closesAt: '06:00');
     if (hour >= 6  && hour < 14) return (forShift: 'Odpolední', closesAt: '14:00');
-    if (hour >= 14 && hour < 21) return (forShift: 'Noční',     closesAt: '21:00'); // opravit
+    if (hour >= 14 && hour < 22) return (forShift: 'Noční',     closesAt: '22:00');
     return null;
   }
 

@@ -93,7 +93,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
               orderTotal: orderTotal,
             );
           } catch (emailError) {
-            // Email failure should not block status update
+            // Pokud se stala chyba při odeslání emailu, stále se změní stav objednávky.
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

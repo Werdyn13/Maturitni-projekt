@@ -44,7 +44,7 @@ class NastenkaService {
     }
   }
 
-  // Nastavit zaskrtnutí úkolu zaměstnancem
+  // Nastavit zaškrtnutí úkolu zaměstnancem
   Future<void> setChecked(int id, bool value) async {
     await _supabase
         .from('Nastenka')
@@ -65,7 +65,7 @@ class NastenkaService {
   }
 
   // Označit úkol jako splněný.
-  // Pokud se opakuje, posune na_den na podle hodnoty opakování.
+  // Pokud se opakuje, posune na_den podle hodnoty opakování.
   // Pokud příští datum přesáhne platnost_do, nebo se neopakuje, smaže ho.
   Future<void> completeTask(int id,
       {String? opakovat, DateTime? naDen, DateTime? platnostDo}) async {
@@ -104,7 +104,7 @@ class NastenkaService {
     }
   }
 
-  // Odeslat zprávu adminovi e-mailem přes Resend edge function
+  // Odeslat zprávu adminovi e-mailem přes Resend
   Future<void> sendMessageToAdmin(String message) async {
     final user = _supabase.auth.currentUser;
     if (user == null) throw Exception('Uživatel není přihlášen');

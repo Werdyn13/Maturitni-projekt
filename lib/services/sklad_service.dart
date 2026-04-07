@@ -14,10 +14,9 @@ class SkladService {
 
   // Přidá novou ingredienci
   Future<void> addItem(Map<String, dynamic> data) async {
-  final response = await _supabase
-      .from('Sklad')
-      .insert(data)
-      .select();
+    await _supabase
+        .from('Sklad')
+        .insert(data);
   }
 
   // Upraví existující ingredienci

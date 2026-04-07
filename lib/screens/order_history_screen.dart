@@ -110,7 +110,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                               ),
                             ),
                             const SizedBox(height: 16),
-                            // Calendar
+                            // Kalendář
                             Card(
                               elevation: 2,
                               child: Padding(
@@ -168,7 +168,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                               ),
                             ),
                             const SizedBox(height: 20),
-                            // Orders section
+                            // Zobrazit objednávky pro vybraný den
                             if (_selectedDay != null) ...[
                               Row(
                                 children: [
