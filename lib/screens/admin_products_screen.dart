@@ -242,6 +242,16 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
     // PlutoGrid sloupce
     final columns = <PlutoColumn>[
       PlutoColumn(
+        title: 'id',
+        field: 'id',
+        type: PlutoColumnType.text(),
+        width: 80,
+        hide: true,
+        enableEditingMode: false,
+        enableSorting: false,
+        enableFilterMenuItem: false,
+      ),
+      PlutoColumn(
         title: 'Název',
         field: 'nazev',
         type: PlutoColumnType.text(),
@@ -290,7 +300,8 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
         enableSorting: false,
         enableFilterMenuItem: false,
         renderer: (rendererContext) {
-          final receptura = _receptury[rendererContext.rowIdx];
+          final rowId = int.parse(rendererContext.row.cells['id']?.value?.toString() ?? '0');
+          final receptura = _receptury.firstWhere((r) => r['id'] == rowId);
           return Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -320,8 +331,9 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
     final rows = _receptury.map((receptura) {
       return PlutoRow(
         cells: {
+          'id': PlutoCell(value: receptura['id'].toString()),
           'nazev': PlutoCell(value: receptura['nazev'] ?? ''),
-          'kategorie': PlutoCell(value: receptura['Kategorie']?['nazev'] ?? ''),
+          'kategorie': PlutoCell(value: receptura['Kategorie']?['nazev'] ?? ''),          
           'suroviny': PlutoCell(value: receptura['suroviny'] ?? ''),
           'mnozstvi': PlutoCell(
             value: receptura['mnozstvi'] != null 
@@ -330,7 +342,7 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
           ),
           'cena': PlutoCell(
             value: receptura['cena'] != null
-              ? receptura['cena'].toString()
+              ? (receptura['cena'] as num).toInt().toString()
               : '',
           ),
           'akce': PlutoCell(value: ''),

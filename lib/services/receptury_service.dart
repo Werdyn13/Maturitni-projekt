@@ -80,11 +80,42 @@ class RecepturyService {
   // Smazat recepturu
   Future<void> deleteReceptura(int id) async {
     try {
-      // Nejprve smazat všechny položky objednávek odkazující na tento produkt
+      // Najít všechny objednávky, které tento produkt obsahují
+      final affectedRows = await _supabase
+          .from('ObjednavkaZbozi')
+          .select('objednavka_id')
+          .eq('zbozi_id', id);
+
+      final affectedOrderIds = affectedRows
+          .map<int>((r) => r['objednavka_id'] as int)
+          .toSet()
+          .toList();
+
+      // Smazat položky objednávek odkazující na tento produkt
       await _supabase
           .from('ObjednavkaZbozi')
           .delete()
           .eq('zbozi_id', id);
+
+      // Přepočítat celkovou cenu každé dotčené objednávky
+      for (final orderId in affectedOrderIds) {
+        final items = await _supabase
+            .from('ObjednavkaZbozi')
+            .select('mnozstvi, Receptury(cena)')
+            .eq('objednavka_id', orderId);
+
+        int totalPrice = 0;
+        for (final item in items) {
+          final mnozstvi = (item['mnozstvi'] as num?)?.toInt() ?? 0;
+          final cena = (item['Receptury']?['cena'] as num?) ?? 0;
+          totalPrice += (mnozstvi * cena).round();
+        }
+
+        await _supabase
+            .from('Objednavky')
+            .update({'celkova_cena': totalPrice})
+            .eq('id', orderId);
+      }
 
       await _supabase
           .from('Receptury')

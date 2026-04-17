@@ -203,62 +203,92 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                 ? const Center(
                     child: Text('Objednávka neobsahuje žádné položky'),
                   )
-                : ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: items.length,
-                    itemBuilder: (context, index) {
-                      final item = items[index];
-                      final product = item['Receptury'] ?? {};
-                      final mnozstvi = item['mnozstvi'] ?? 0;
-                      final cena = product['cena'] ?? 0;
-                      final celkovaHodnota = mnozstvi * cena;
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: items.length,
+                        itemBuilder: (context, index) {
+                          final item = items[index];
+                          final product = item['Receptury'] ?? {};
+                          final mnozstvi = item['mnozstvi'] ?? 0;
+                          final cena = product['cena'] ?? 0;
+                          final celkovaHodnota = mnozstvi * cena;
 
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                product['nazev'] ?? 'Bez názvu',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                          return Card(
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Počet kusů: $mnozstvi',
-                                    style: const TextStyle(fontSize: 14),
+                                    product['nazev'] ?? 'Bez názvu',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                  Text(
-                                    'Cena za kus: $cena Kč',
-                                    style: const TextStyle(fontSize: 14),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Počet kusů: $mnozstvi',
+                                        style: const TextStyle(fontSize: 14),
+                                      ),
+                                      Text(
+                                        'Cena za kus: $cena Kč',
+                                        style: const TextStyle(fontSize: 14),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                      'Celk: $celkovaHodnota Kč',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.brown,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 6),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: Text(
-                                  'Celk: $celkovaHodnota Kč',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.brown,
-                                  ),
-                                ),
+                            ),
+                          );
+                        },
+                      ),
+                      const Divider(thickness: 1.5),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Celková cena objednávky:',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              '${items.fold<num>(0, (sum, item) {
+                                final mnozstvi = (item['mnozstvi'] as num?) ?? 0;
+                                final cena = (item['Receptury']?['cena'] as num?) ?? 0;
+                                return sum + mnozstvi * cena;
+                              }).round()} Kč',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.brown,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      );
-                    },
+                      ),
+                    ],
                   ),
           ),
           actions: [
@@ -290,6 +320,16 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
 
     final columns = <PlutoColumn>[
       PlutoColumn(
+        title: 'id',
+        field: 'id',
+        type: PlutoColumnType.text(),
+        width: 80,
+        hide: true,
+        enableEditingMode: false,
+        enableSorting: false,
+        enableFilterMenuItem: false,
+      ),
+      PlutoColumn(
         title: 'Datum',
         field: 'datum',
         type: PlutoColumnType.text(),
@@ -304,7 +344,8 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
         width: 250,
         enableSorting: true,
         renderer: (rendererContext) {
-          final email = _orders[rendererContext.rowIdx]['Uzivatel']?['mail'] ?? ' ';
+          final rowId = int.parse(rendererContext.row.cells['id']?.value?.toString() ?? '0');
+          final email = _orders.firstWhere((o) => o['id'] == rowId)['Uzivatel']?['mail'] ?? ' ';
 
           return Tooltip(
             message: email,
@@ -410,7 +451,8 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
         enableSorting: false,
         enableFilterMenuItem: false,
         renderer: (rendererContext) {
-          final order = _orders[rendererContext.rowIdx];
+          final rowId = int.parse(rendererContext.row.cells['id']?.value?.toString() ?? '0');
+          final order = _orders.firstWhere((o) => o['id'] == rowId);
           final status = order['stav'].toString();
 
           return Row(
@@ -423,7 +465,6 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                   isDense: true,
                   underline: const SizedBox(),
                   items: const [
-                    DropdownMenuItem(value: 'nova', child: Text('Nová', style: TextStyle(fontSize: 12))),
                     DropdownMenuItem(value: 'navrh', child: Text('Návrh', style: TextStyle(fontSize: 12))),
                     DropdownMenuItem(value: 'potvrzena', child: Text('Potvrzená', style: TextStyle(fontSize: 12))),
                     DropdownMenuItem(value: 'pripravena', child: Text('Připravená', style: TextStyle(fontSize: 12))),
@@ -475,6 +516,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
 
       return PlutoRow(
         cells: {
+          'id': PlutoCell(value: order['id'].toString()),
           'datum': PlutoCell(value: formattedDate),
           'zakaznik': PlutoCell(value: zakaznik),
           'cena': PlutoCell(value: order['celkova_cena'] ?? 0),

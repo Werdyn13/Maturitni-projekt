@@ -208,6 +208,7 @@ class OrdersService {
     final orders = await _supabase
         .from('Objednavky')
         .select('*, Uzivatel(jmeno, prijmeni, mail)')
+        .neq('stav', 'nova')
         .order('datum_objednavky', ascending: false);
 
     return List<Map<String, dynamic>>.from(orders);
