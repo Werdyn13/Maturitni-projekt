@@ -107,6 +107,9 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
     final mnozstviController = TextEditingController(
       text: receptura['mnozstvi']?.toString() ?? '',
     );
+    final cenaController = TextEditingController(
+      text: receptura['cena']?.toString() ?? '',
+    );
     int? selectedKategorieId = receptura['kategorie_id'] as int?;
 
     showDialog(
@@ -156,6 +159,15 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                   ),
                   keyboardType: TextInputType.number,
                 ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: cenaController,
+                  decoration: const InputDecoration(
+                    labelText: 'Cena (Kč)',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                ),
               ],
             ),
           ),
@@ -176,6 +188,9 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
                     mnozstvi: mnozstviController.text.isEmpty
                       ? null
                       : int.tryParse(mnozstviController.text),
+                    cena: cenaController.text.isEmpty
+                      ? null
+                      : double.tryParse(cenaController.text),
                   );
                   await _loadReceptury();
                   if (mounted) {
@@ -259,6 +274,14 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
         enableSorting: true,
       ),
       PlutoColumn(
+        title: 'Cena (Kč)',
+        field: 'cena',
+        type: PlutoColumnType.text(),
+        width: 120,
+        enableEditingMode: false,
+        enableSorting: true,
+      ),
+      PlutoColumn(
         title: 'Akce',
         field: 'akce',
         type: PlutoColumnType.text(),
@@ -303,6 +326,11 @@ class _AdminProductsScreenState extends State<AdminProductsScreen> {
           'mnozstvi': PlutoCell(
             value: receptura['mnozstvi'] != null 
               ? receptura['mnozstvi'].toString() 
+              : '',
+          ),
+          'cena': PlutoCell(
+            value: receptura['cena'] != null
+              ? receptura['cena'].toString()
               : '',
           ),
           'akce': PlutoCell(value: ''),
@@ -412,6 +440,7 @@ class _AddRecepturaDialogState extends State<_AddRecepturaDialog> {
   final nazevController = TextEditingController();
   final surovinyController = TextEditingController();
   final mnozstviController = TextEditingController();
+  final cenaController = TextEditingController();
   int? _selectedKategorieId;
 
   bool _nazevError = false;
@@ -422,6 +451,7 @@ class _AddRecepturaDialogState extends State<_AddRecepturaDialog> {
     nazevController.dispose();
     surovinyController.dispose();
     mnozstviController.dispose();
+    cenaController.dispose();
     super.dispose();
   }
 
@@ -443,6 +473,9 @@ class _AddRecepturaDialogState extends State<_AddRecepturaDialog> {
         mnozstvi: mnozstviController.text.isEmpty
           ? null
           : int.tryParse(mnozstviController.text),
+        cena: cenaController.text.isEmpty
+          ? null
+          : double.tryParse(cenaController.text),
       );
       widget.onSuccess();
       if (mounted) {
@@ -553,6 +586,15 @@ class _AddRecepturaDialogState extends State<_AddRecepturaDialog> {
                 border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: cenaController,
+              decoration: const InputDecoration(
+                labelText: 'Cena (Kč)',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
             ),
           ],
         ),

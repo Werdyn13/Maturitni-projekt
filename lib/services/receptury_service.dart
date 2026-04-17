@@ -22,6 +22,7 @@ class RecepturyService {
     required int kategorieId,
     String? suroviny,
     int? mnozstvi,
+    double? cena,
   }) async {
     try {
       await _supabase.from('Receptury').insert({
@@ -29,6 +30,7 @@ class RecepturyService {
         'kategorie_id': kategorieId,
         'suroviny': suroviny,
         'mnozstvi': mnozstvi,
+        'cena': cena,
       });
     } catch (e) {
       rethrow;
@@ -42,6 +44,7 @@ class RecepturyService {
     int? kategorieId,
     String? suroviny,
     int? mnozstvi,
+    double? cena,
   }) async {
     try {
       final updateData = <String, dynamic>{};
@@ -50,6 +53,7 @@ class RecepturyService {
       if (kategorieId != null) updateData['kategorie_id'] = kategorieId;
       if (suroviny != null) updateData['suroviny'] = suroviny;
       if (mnozstvi != null) updateData['mnozstvi'] = mnozstvi;
+      if (cena != null) updateData['cena'] = cena;
       
       await _supabase
           .from('Receptury')
@@ -76,6 +80,12 @@ class RecepturyService {
   // Smazat recepturu
   Future<void> deleteReceptura(int id) async {
     try {
+      // Nejprve smazat všechny položky objednávek odkazující na tento produkt
+      await _supabase
+          .from('ObjednavkaZbozi')
+          .delete()
+          .eq('zbozi_id', id);
+
       await _supabase
           .from('Receptury')
           .delete()
