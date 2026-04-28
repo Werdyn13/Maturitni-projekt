@@ -133,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       : LayoutBuilder(
                           builder: (context, constraints) {
                             final columns = constraints.maxWidth < 480 ? 2 : 3;
-                            final aspectRatio = columns == 2 ? 0.80 : 0.85;
+                            final aspectRatio = columns == 2 ? 0.62 : 0.75;
                             return GridView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
@@ -206,33 +206,34 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(16),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.all(12.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: Colors.grey[100],
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(icon, size: 48, color: Colors.black),
+                    child: Icon(icon, size: 36, color: Colors.black),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 10),
                   Text(
                     title,
                     style: const TextStyle(
-                      fontSize: 18,
+                      fontSize: 15,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
+                    textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Text(
                     description,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 12,
                       color: Colors.grey[700],
                     ),
                     maxLines: 2,
