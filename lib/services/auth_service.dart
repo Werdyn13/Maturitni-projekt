@@ -149,6 +149,11 @@ class AuthService {
     await _supabase.from('Uzivatel').delete().eq('mail', email);
   }
 
+  // Odeslat email pro reset hesla
+  Future<void> resetPasswordForEmail(String email) async {
+    await _supabase.auth.resetPasswordForEmail(email);
+  }
+
   Future<void> toggleEmployeeStatus(String email, bool newStatus) async {
   await _supabase
       .from('Uzivatel')

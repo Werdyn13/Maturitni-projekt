@@ -157,6 +157,57 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
+  Future<void> _handleForgotPassword() async {
+    final emailController = TextEditingController(text: _emailController.text.trim());
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Obnovení hesla'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Zadejte svůj email. Pošleme vám odkaz pro resetování hesla.'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                labelText: 'Email',
+                prefixIcon: Icon(Icons.email, color: Colors.grey[600], size: 20),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Zrušit'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[900], foregroundColor: Colors.white),
+            child: const Text('Odeslat'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+    final email = emailController.text.trim();
+    if (email.isEmpty) return;
+
+    setState(() => _isLoading = true);
+    try {
+      await _authService.resetPasswordForEmail(email);
+      _showMessage('Email pro obnovení hesla byl odeslán.');
+    } catch (e) {
+      _showMessage('Nepodařilo se odeslat email: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
   void _showMessage(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -245,6 +296,11 @@ class _LoginScreenState extends State<LoginScreen>
 
           if (!_isRegistering) _buildLoginButton(),
           if (_isRegistering) _buildCreateAccountButton(),
+
+          if (!_isRegistering) ...[
+            const SizedBox(height: 4),
+            _buildForgotPasswordButton(),
+          ],
 
           const SizedBox(height: 12),
           _buildToggleButton(),
@@ -355,6 +411,19 @@ class _LoginScreenState extends State<LoginScreen>
                 ),
               )
             : const Text("Vytvořit účet", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+      ),
+    );
+  }
+
+  Widget _buildForgotPasswordButton() {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: TextButton(
+        onPressed: _isLoading ? null : _handleForgotPassword,
+        child: Text(
+          'Zapomněli jste heslo?',
+          style: TextStyle(color: Colors.grey[600], fontSize: 13),
+        ),
       ),
     );
   }
