@@ -26,12 +26,14 @@ class _OrdersScreenState extends State<OrdersScreen> {
     try {
       final cart = await _ordersService.getCurrentCart();
       final drafts = await _ordersService.getDraftOrders();
+      if (!mounted) return;
       setState(() {
         _currentCart = cart;
         _draftOrders = drafts;
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -244,7 +246,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : SingleChildScrollView(
-                    padding: const EdgeInsets.all(24.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
                     child: Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 1000),
@@ -294,12 +296,15 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                       border: Border.all(color: Colors.green.shade200),
                                     ),
                                     child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Icon(Icons.schedule, size: 16, color: Colors.green.shade700),
                                         const SizedBox(width: 8),
-                                        Text(
-                                          'Objednávky pro ${window.forShift} směnu · Otevřeno do ${window.closesAt}',
-                                          style: TextStyle(color: Colors.green.shade700, fontSize: 13),
+                                        Expanded(
+                                          child: Text(
+                                            'Objednávky pro ${window.forShift} směnu · Otevřeno do ${window.closesAt}',
+                                            style: TextStyle(color: Colors.green.shade700, fontSize: 13),
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -397,14 +402,14 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                 elevation: 4,
                                 color: Colors.grey[100],
                                 child: Padding(
-                                  padding: const EdgeInsets.all(24.0),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       const Text(
                                         'Celková cena:',
                                         style: TextStyle(
-                                          fontSize: 24,
+                                          fontSize: 18,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.black,
                                         ),
@@ -412,7 +417,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                       Text(
                                         '$totalPrice Kč',
                                         style: const TextStyle(
-                                          fontSize: 28,
+                                          fontSize: 20,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.black,
                                         ),
@@ -488,79 +493,85 @@ class _OrdersScreenState extends State<OrdersScreen> {
         side: BorderSide(color: Colors.grey.shade200),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: Row(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
                     nazev,
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '$cena Kč / ks',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                  ),
-                ],
-              ),
-            ),
-            
-            IconButton(
-              onPressed: () => _updateQuantity(itemId, orderId, mnozstvi, -1),
-              icon: const Icon(Icons.remove, size: 16),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.grey.shade100,
-                shape: const CircleBorder(),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Text(
-                '$mnozstvi',
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
                 ),
-              ),
-            ),
-            IconButton(
-              onPressed: () => _updateQuantity(itemId, orderId, mnozstvi, 1),
-              icon: const Icon(Icons.add, size: 16),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.grey.shade100,
-                shape: const CircleBorder(),
-              ),
-            ),
-            const SizedBox(width: 16),
-            SizedBox(
-              width: 72,
-              child: Text(
-                '$celkovaCena Kč',
-                textAlign: TextAlign.right,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+                IconButton(
+                  onPressed: () => _removeItem(itemId, orderId),
+                  icon: const Icon(Icons.close, size: 16),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                  color: Colors.grey[400],
+                  tooltip: 'Odebrat',
                 ),
-              ),
+              ],
             ),
-            const SizedBox(width: 4),
-            IconButton(
-              onPressed: () => _removeItem(itemId, orderId),
-              icon: const Icon(Icons.close, size: 16),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-              color: Colors.grey[400],
-              tooltip: 'Odebrat',
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '$cena Kč / ks',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => _updateQuantity(itemId, orderId, mnozstvi, -1),
+                      icon: const Icon(Icons.remove, size: 16),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.grey.shade100,
+                        shape: const CircleBorder(),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text(
+                        '$mnozstvi',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => _updateQuantity(itemId, orderId, mnozstvi, 1),
+                      icon: const Icon(Icons.add, size: 16),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.grey.shade100,
+                        shape: const CircleBorder(),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      '$celkovaCena Kč',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ],
         ),

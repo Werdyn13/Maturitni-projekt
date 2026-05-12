@@ -219,18 +219,16 @@ class _EmployeeShiftsScreenState extends State<EmployeeShiftsScreen> {
                                   ),
                                 ),
                               ),
-                            if (hasShift) ...[
-                              const SizedBox(height: 6),
-                              Text(
-                                label,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 9,
-                                  color: today ? Colors.white70 : color,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                            const SizedBox(height: 6),
+                            Text(
+                              hasShift ? label : '',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 9,
+                                color: today ? Colors.white70 : color,
+                                fontWeight: FontWeight.w500,
                               ),
-                            ],
+                            ),
                           ],
                         ),
                       ),

@@ -150,13 +150,25 @@ class _EmployeeOrdersScreenState extends State<EmployeeOrdersScreen> {
                       final order = _orders[index];
                       final createdAt = _formatOrderDate(order['datum_objednavky']);
 
+                      final user = order['Uzivatel'];
+                      final creatorName = user != null
+                          ? '${user['jmeno'] ?? ''} ${user['prijmeni'] ?? ''}'.trim()
+                          : 'Neznamy';
+
                       return Card(
                         child: ListTile(
                           title: Text(
-                            'Objednavka #${order['id']}',
+                            'Objednávka #${order['id']}',
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          subtitle: Text('Vytvoreno: $createdAt'),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Vytvořeno: $createdAt'),
+                              Text('Zákazník: $creatorName'),
+                            ],
+                          ),
+                          isThreeLine: true,
                           trailing: TextButton.icon(
                             onPressed: () => _showOrderDetails(order['id'] as int),
                             icon: const Icon(Icons.visibility),
