@@ -26,8 +26,15 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   Future<void> _loadOrders() async {
     try {
       final orders = await _ordersService.getUserOrders();
+      // Načítání produktů pro objednávky
+      final enriched = await Future.wait(
+        orders.map((order) async {
+          final items = await _ordersService.getOrderItems(order['id'] as int);
+          return {...order, 'items': items};
+        }),
+      );
       setState(() {
-        _orders = orders;
+        _orders = enriched;
         _isLoading = false;
       });
     } catch (e) {
@@ -341,7 +348,47 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
             ),
             const SizedBox(height: 10),
             const Divider(),
+            const SizedBox(height: 8),
+            // Items list
+            if (order['items'] != null && (order['items'] as List).isNotEmpty) ...
+              (order['items'] as List<Map<String, dynamic>>).map((item) {
+                final produkt = item['Receptury'] as Map<String, dynamic>?;
+                final nazev = produkt?['nazev'] ?? 'Neznámý produkt';
+                final mnozstvi = item['mnozstvi'] ?? 0;
+                final cena = produkt?['cena'] ?? 0;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 3),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          nazev,
+                          style: const TextStyle(fontSize: 14, color: Colors.black87),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${mnozstvi}×',
+                        style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${(mnozstvi * (cena as num)).round()} Kč',
+                        style: const TextStyle(fontSize: 14, color: Colors.black87),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList()
+            else
+              Text(
+                'Žádné položky',
+                style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+              ),
             const SizedBox(height: 10),
+            const Divider(),
+            const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
